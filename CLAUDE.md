@@ -4,7 +4,24 @@ This file provides context for Claude when working on the Unshell project.
 
 ## Project Overview
 
-Unshell is an Electron desktop application built with React, TypeScript, and Tailwind CSS.
+**Unshell** — *The Product Team's Command Center for Claude.*
+
+Unshell is a specialized desktop interface that brings the power of Claude's agentic workflows out of the terminal and into a high-productivity GUI. Built for product teams, it eliminates the "CLI barrier," allowing non-technical stakeholders to execute complex, multi-step workflows using their existing Claude Pro or Max subscriptions.
+
+### Technical Architecture
+
+- **Engine**: Electron desktop application (React, TypeScript, Tailwind CSS)
+- **Intelligence**: Claude Agent SDK (runs locally on user's machine)
+- **Bridge**: Agent Client Protocol (ACP) for GUI-agent communication, MCP for internal data connections
+- **Cost Model**: $0 API fees — usage billed against users' existing subscription quotas
+- **Auth**: One-time `claude login` triggered by the app
+
+### Key Features
+
+- **Bring Your Own Subscription (BYOS)**: Connects to local Claude credentials — no API keys, no per-token billing
+- **Action Cards**: One-click buttons for common product workflows (Spec-to-Ticket, Roadmap Refiner, "Roast" Protocol)
+- **MCP Integration**: Connects to internal data (GitHub, Jira, Notion, custom DBs) via Model Context Protocol
+- **Local-First Privacy**: All processing on user's machine — internal data never touches centralized servers
 
 ## Development Environment
 
