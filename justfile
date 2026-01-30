@@ -14,6 +14,7 @@ init:
 # Install all dependencies
 deps:
     pnpm install
+    node node_modules/electron/install.js
 
 # Start the development server (Electron in dev mode)
 server:
