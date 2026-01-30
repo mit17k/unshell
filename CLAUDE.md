@@ -4,9 +4,11 @@ This file provides context for Claude when working on the Unshell project.
 
 ## Project Overview
 
-**Unshell** — *The Product Team's Command Center for Claude.*
+**Unshell** — _The Product Team's Command Center for Claude._
 
-Unshell is a specialized desktop interface that brings the power of Claude's agentic workflows out of the terminal and into a high-productivity GUI. Built for product teams, it eliminates the "CLI barrier," allowing non-technical stakeholders to execute complex, multi-step workflows using their existing Claude Pro or Max subscriptions.
+Unshell is a specialized desktop interface that brings the power of Claude's agentic workflows out of the terminal and
+into a high-productivity GUI. Built for product teams, it eliminates the "CLI barrier," allowing non-technical
+stakeholders to execute complex, multi-step workflows using their existing Claude Pro or Max subscriptions.
 
 ### Technical Architecture
 
@@ -52,6 +54,7 @@ Unshell is a specialized desktop interface that brings the power of Claude's age
 ### Path Aliases
 
 Always use path aliases for imports:
+
 - `@components/*` for components
 - `@hooks/*` for custom hooks
 - `@stores/*` for Zustand stores
@@ -106,6 +109,7 @@ npx shadcn@latest add <component-name>
 ## IPC Communication
 
 Use the exposed `electronAPI` in renderer:
+
 - `window.electronAPI.send(channel, data)` - one-way to main
 - `window.electronAPI.invoke(channel, data)` - request/response
 - `window.electronAPI.receive(channel, callback)` - listen from main

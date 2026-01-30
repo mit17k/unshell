@@ -11,5 +11,5 @@ if (!rootElement) throw new Error("Failed to find root element");
 createRoot(rootElement).render(
   <StrictMode>
     <App />
-  </StrictMode>
+  </StrictMode>,
 );
