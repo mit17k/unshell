@@ -1,115 +1,87 @@
-# Claude Code Context
+# CLAUDE.md
 
-This file provides context for Claude when working on the Unshell project.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
 
-**Unshell** — _The Product Team's Command Center for Claude._
+Unshell is an Electron desktop app that brings Claude's agentic workflows to a GUI for product teams. It uses the Claude Agent SDK locally with users' existing Claude Pro/Max subscriptions (no API keys needed).
 
-Unshell is a specialized desktop interface that brings the power of Claude's agentic workflows out of the terminal and
-into a high-productivity GUI. Built for product teams, it eliminates the "CLI barrier," allowing non-technical
-stakeholders to execute complex, multi-step workflows using their existing Claude Pro or Max subscriptions.
+## Development Commands
 
-### Technical Architecture
+```bash
+just              # List all commands
+just deps         # Install dependencies (run after clone/pull)
+just server       # Start dev server
+just build        # Build for production
+just test         # Run tests
+just lint         # Fix linting issues
+just format       # Format code
+```
 
-- **Engine**: Electron desktop application (React, TypeScript, Tailwind CSS)
-- **Intelligence**: Claude Agent SDK (runs locally on user's machine)
-- **Bridge**: Agent Client Protocol (ACP) for GUI-agent communication, MCP for internal data connections
-- **Cost Model**: $0 API fees — usage billed against users' existing subscription quotas
-- **Auth**: One-time `claude login` triggered by the app
+Run a single test file:
+```bash
+pnpm vitest run src/renderer/stores/app-store.test.ts
+```
 
-### Key Features
-
-- **Bring Your Own Subscription (BYOS)**: Connects to local Claude credentials — no API keys, no per-token billing
-- **Action Cards**: One-click buttons for common product workflows (Spec-to-Ticket, Roadmap Refiner, "Roast" Protocol)
-- **MCP Integration**: Connects to internal data (GitHub, Jira, Notion, custom DBs) via Model Context Protocol
-- **Local-First Privacy**: All processing on user's machine — internal data never touches centralized servers
-
-## Development Environment
-
-- Uses Nix flakes for reproducible development environment
-- Run `just` to see all available commands
-- Always use `just deps` after cloning or pulling changes
+Watch mode for tests:
+```bash
+pnpm test:watch
+```
 
 ## Architecture
 
-### Process Model
+### Electron Process Model
 
-- **Main Process** (`src/main/`): Node.js environment, handles system-level operations
-- **Preload Scripts** (`src/preload/`): Bridge between main and renderer, exposes safe APIs
-- **Renderer Process** (`src/renderer/`): React application, runs in Chromium
+Three separate build targets configured in `electron.vite.config.ts`:
+
+- **Main Process** (`src/main/`): Node.js environment for system operations. Entry: `src/main/index.ts`
+- **Preload Scripts** (`src/preload/`): Context bridge exposing `window.electronAPI` to renderer. Entry: `src/preload/index.ts`
+- **Renderer Process** (`src/renderer/`): React app running in Chromium. Entry: `src/renderer/main.tsx`
+
+### IPC Communication
+
+Use the exposed `electronAPI` in renderer:
+```typescript
+window.electronAPI.send(channel, data)         // one-way to main
+window.electronAPI.invoke(channel, data)       // request/response
+window.electronAPI.receive(channel, callback)  // listen from main
+```
 
 ### State Management
 
-- Use Zustand for global state (`src/renderer/stores/`)
-- Stores should be typed and use the pattern in `app-store.ts`
+Zustand stores in `src/renderer/stores/`. Pattern from `app-store.ts`:
+```typescript
+interface MyState {
+  value: string;
+  setValue: (value: string) => void;
+}
+
+export const useMyStore = create<MyState>((set) => ({
+  value: "",
+  setValue: (value) => set({ value }),
+}));
+```
+
+### Path Aliases
+
+Always use these aliases for imports:
+- `@components/*` → `src/renderer/components/*`
+- `@hooks/*` → `src/renderer/hooks/*`
+- `@stores/*` → `src/renderer/stores/*`
+- `@utils/*` → `src/renderer/utils/*`
 
 ### Styling
 
 - Tailwind CSS v4 with CSS-first configuration
 - shadcn/ui components in `src/renderer/components/ui/`
-- Use the `cn()` utility from `@utils/cn` for conditional classes
-- Theme variables defined in `src/renderer/styles/globals.css`
-
-### Path Aliases
-
-Always use path aliases for imports:
-
-- `@components/*` for components
-- `@hooks/*` for custom hooks
-- `@stores/*` for Zustand stores
-- `@utils/*` for utilities
+- Use `cn()` from `@utils/cn` for conditional classes
+- Theme variables in `src/renderer/styles/globals.css`
+- Add shadcn components: `npx shadcn@latest add <component-name>`
 
 ## Code Conventions
 
-### TypeScript
-
-- Strict mode enabled
-- Prefer explicit types over inference for function parameters
+- TypeScript strict mode enabled
 - Use `interface` for object shapes, `type` for unions/intersections
-
-### React
-
-- Functional components only
-- Use named exports for components
-- Hooks should be prefixed with `use`
-
-### Testing
-
+- Functional components with named exports
 - Tests co-located with source files (`*.test.ts` / `*.test.tsx`)
-- Use Vitest + Testing Library
-- Run tests with `just test`
-
-### Formatting & Linting
-
-- Prettier for formatting (run `just format`)
-- ESLint for linting (run `just lint`)
-- Import sorting handled by prettier-plugin-sort-imports
-
-## Common Tasks
-
-### Adding a New Component
-
-1. Create component in `src/renderer/components/`
-2. Use shadcn/ui primitives when applicable
-3. Export from component file
-
-### Adding a New Store
-
-1. Create store in `src/renderer/stores/`
-2. Follow the pattern in `app-store.ts`
-3. Add corresponding test file
-
-### Adding shadcn Components
-
-```bash
-npx shadcn@latest add <component-name>
-```
-
-## IPC Communication
-
-Use the exposed `electronAPI` in renderer:
-
-- `window.electronAPI.send(channel, data)` - one-way to main
-- `window.electronAPI.invoke(channel, data)` - request/response
-- `window.electronAPI.receive(channel, callback)` - listen from main
+- Vitest + Testing Library for testing
