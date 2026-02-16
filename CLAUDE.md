@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Unshell is an Electron desktop app that brings Claude's agentic workflows to a GUI for product teams. It uses the Claude Agent SDK locally with users' existing Claude Pro/Max subscriptions (no API keys needed).
+Unshell is "Cursor for product teams" — a desktop app that brings Claude's agentic workflows into a purpose-built GUI for product managers, designers, and analysts. Just as Cursor embedded AI into the developer's code editor to transform software engineering workflows, Unshell embeds AI into a product workspace to transform product team workflows. It uses the Claude Agent SDK locally with users' existing Claude Pro/Max subscriptions (no API keys needed). The core value proposition: eliminate the CLI barrier and context-switching tax that prevent product teams from leveraging AI at the same depth developers do.
 
 ## Development Commands
 

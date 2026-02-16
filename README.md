@@ -1,43 +1,54 @@
 # Unshell
 
-**The Product Team's Command Center for Claude.**
+**Cursor for Product Teams.**
 
-Unshell is a specialized desktop interface designed to bring the raw power of Claude's agentic workflows out of the
-terminal and into a high-productivity GUI. Built specifically for product teams, Unshell eliminates the "CLI barrier,"
-allowing non-technical stakeholders to execute complex, multi-step workflows—from spec drafting to Jira ticket
-generation—using their existing Claude Pro or Max subscriptions.
+[Cursor](https://cursor.com) revolutionized how developers work by embedding AI directly into their code editor — making the entire codebase an active collaborator rather than a passive file system. Unshell does the same thing for product teams.
 
-## Why Unshell?
+Unshell is a desktop app that brings Claude's agentic workflows into a purpose-built GUI, turning product managers, designers, and analysts into AI-augmented operators. No terminal. No API keys. Just your existing Claude Pro or Max subscription and a workspace designed for how product teams actually think and work.
 
-While Claude Code provides incredible developer productivity, the terminal is a friction point for Product Managers.
-Unshell "unshells" that power, providing a polished, "Whiteboard Energy" interface that turns Claude into a specialized,
-always-on product partner.
+## The Problem
+
+Developers have Cursor. They ship faster, explore codebases instantly, and automate tedious tasks with AI baked into every interaction.
+
+Product teams have... chat windows. They copy-paste between Claude, Jira, Notion, and Figma. They context-switch constantly. The most powerful AI workflows live behind a terminal that most product people will never open.
+
+**The gap isn't intelligence — it's interface.**
+
+## How Unshell Solves It
+
+Just as Cursor gives developers project-wide AI understanding across their codebase, Unshell gives product teams project-wide AI understanding across their product context.
+
+| What Cursor does for developers        | What Unshell does for product teams      |
+| --------------------------------------- | ---------------------------------------- |
+| Understands your entire codebase        | Understands your entire product context  |
+| Multi-file edits in one action          | Multi-tool workflows in one action       |
+| AI embedded in the editor               | AI embedded in the product workspace     |
+| Works with your existing AI models      | Works with your existing Claude subscription |
+| Eliminates context-switching with tools | Eliminates context-switching across tools |
 
 ## Key Features
 
 ### Bring Your Own Subscription (BYOS)
 
-Seamlessly connects to local Claude credentials. No API keys, no per-token billing, and zero additional infrastructure
-costs. Usage is billed against users' existing monthly subscription quotas.
+Connects to local Claude credentials. No API keys, no per-token billing, no additional infrastructure. Usage runs against your existing monthly subscription quota.
 
 ### Workflow Orchestration
 
-One-click "Action Cards" for common product tasks:
+One-click Action Cards for common product tasks:
 
-- **Spec-to-Ticket**: Turns a messy brainstorming doc into a structured set of Jira stories
-- **Roadmap Refiner**: Analyzes feature requests against current product pillars
-- **The "Roast" Protocol**: Provides critical feedback on product logic or technical debt
+- **Spec-to-Ticket** — Turn a messy brainstorming doc into structured Jira stories
+- **Roadmap Refiner** — Analyze feature requests against current product pillars
+- **The "Roast" Protocol** — Get critical feedback on product logic or technical debt
 
-### MCP Integration
+### Full Product Context via MCP
 
-Natively connects to internal company data (GitHub, Jira, Notion, or custom DBs) via the Model Context Protocol,
-ensuring Claude always has the full product context.
+Natively connects to your internal tools (GitHub, Jira, Notion, databases) via the Model Context Protocol. Claude always has the full picture — just like Cursor indexes your entire repo.
 
 ### Local-First Privacy
 
-All processing happens on the user's machine. Internal data never touches a centralized LLM server you control.
+All processing happens on your machine. Internal data never touches a centralized server. Your product strategy stays yours.
 
-## Technical Architecture
+## Architecture
 
 | Component            | Technology                       |
 | -------------------- | -------------------------------- |
@@ -46,11 +57,6 @@ All processing happens on the user's machine. Internal data never touches a cent
 | **GUI-Agent Bridge** | Agent Client Protocol (ACP)      |
 | **Data Connections** | Model Context Protocol (MCP)     |
 | **Cost**             | $0 API fees (subscription-based) |
-
-## Getting Started
-
-Users perform a one-time `claude login` (triggered by the app), and then interact with "Action Cards" instead of complex
-terminal commands.
 
 ## Prerequisites
 
