@@ -1,62 +1,121 @@
 # Unshell
 
-**Cursor for Product Teams.**
+**Claude Code for Product Teams — with a UI instead of a terminal.**
 
-[Cursor](https://cursor.com) revolutionized how developers work by embedding AI directly into their code editor — making the entire codebase an active collaborator rather than a passive file system. Unshell does the same thing for product teams.
+Unshell is a desktop app that wraps Claude Code (via ACP) with a purpose-built UI for product work. It eliminates the need to juggle Notion, Google Docs, Figma, Canva, Miro, and a terminal by providing a single workspace where Claude Code does the heavy lifting and the UI handles rendering, editing, and organizing the outputs.
 
-Unshell is a desktop app that brings Claude's agentic workflows into a purpose-built GUI, turning product managers, designers, and analysts into AI-augmented operators. No terminal. No API keys. Just your existing Claude Pro or Max subscription and a workspace designed for how product teams actually think and work.
+## The Key Insight
 
-## The Problem
+Claude Code already knows how to write PRDs, generate wireframes as HTML, create pitch decks, do market research, draw Mermaid diagrams, and build mind maps. The problem is that accessing all of this through a terminal sucks for product work. Unshell is the UI layer that makes Claude Code's product capabilities accessible.
 
-Developers have Cursor. They ship faster, explore codebases instantly, and automate tedious tasks with AI baked into every interaction.
+| Tool | Unshell Equivalent |
+| ---- | ------------------ |
+| Notion / Google Docs | Markdown editor with rich rendering |
+| Figma (rough wireframes) | HTML wireframes rendered inline |
+| Canva (decks) | Markdown-driven slide presentations |
+| Miro (mind maps) | Mermaid + HTML mind maps in docs |
+| Terminal Claude Code | Visual side panel with project context |
+| Manual CLAUDE.md setup | Auto-managed project context |
 
-Product teams have... chat windows. They copy-paste between Claude, Jira, Notion, and Figma. They context-switch constantly. The most powerful AI workflows live behind a terminal that most product people will never open.
+## Core Concept: Project = Folder
 
-**The gap isn't intelligence — it's interface.**
+When you create a project, Unshell asks you to select or create a directory on your Mac. That's it. The project IS the folder. Everything is plain files. If Unshell dies tomorrow, your work survives.
 
-## How Unshell Solves It
+```
+~/projects/my-saas-idea/
+├── .unshell/
+│   ├── CLAUDE.md              ← Auto-managed, always up to date
+│   ├── project.json           ← Metadata, phase, settings
+│   └── workflow-state.json    ← Active workflow progress
+├── research/
+│   ├── market-landscape.md
+│   ├── competitors.md
+│   └── tam-sam-som.md
+├── docs/
+│   ├── prd.md
+│   ├── user-personas.md
+│   └── user-journeys.md
+├── wireframes/
+│   ├── landing-page.html
+│   ├── dashboard.html
+│   └── onboarding-flow.html
+├── decks/
+│   ├── pitch-deck.md          ← Markdown slides with --- separators
+│   └── investor-update.md
+└── notes/
+    ├── brainstorm-jan15.md
+    └── meeting-notes.md
+```
 
-Just as Cursor gives developers project-wide AI understanding across their codebase, Unshell gives product teams project-wide AI understanding across their product context.
+## App Layout
 
-| What Cursor does for developers        | What Unshell does for product teams      |
-| --------------------------------------- | ---------------------------------------- |
-| Understands your entire codebase        | Understands your entire product context  |
-| Multi-file edits in one action          | Multi-tool workflows in one action       |
-| AI embedded in the editor               | AI embedded in the product workspace     |
-| Works with your existing AI models      | Works with your existing Claude subscription |
-| Eliminates context-switching with tools | Eliminates context-switching across tools |
+Three-panel workspace where you live 99% of the time:
 
-## Key Features
+- **Explorer** (left) — Real filesystem tree of the project folder
+- **Editor/Viewer** (center) — Multi-format engine that detects file type and renders accordingly
+- **Claude Panel** (right) — ACP-connected Claude Code with Chat and Workflow tabs
 
-### Bring Your Own Subscription (BYOS)
+### Editor Modes
 
-Connects to local Claude credentials. No API keys, no per-token billing, no additional infrastructure. Usage runs against your existing monthly subscription quota.
+| File Type | Rendering |
+| --------- | --------- |
+| `.md` files | Rich inline markdown (TipTap) with Mermaid, callout blocks, embedded HTML |
+| `.html` in `/wireframes/` | Live HTML preview with viewport controls (desktop/tablet/mobile) |
+| `.md` in `/decks/` | Slide presentation view with navigation and fullscreen mode |
+| `.mermaid` files | Interactive diagram rendering |
 
-### Workflow Orchestration
+### Annotation System
 
-One-click Action Cards for common product tasks:
+Select text in any document (or click an element in a wireframe) to get a floating toolbar: Discuss, Refine, Challenge, Expand, Source, Delete. Each action opens a threaded conversation in the Claude Panel with the selection as context.
 
-- **Spec-to-Ticket** — Turn a messy brainstorming doc into structured Jira stories
-- **Roadmap Refiner** — Analyze feature requests against current product pillars
-- **The "Roast" Protocol** — Get critical feedback on product logic or technical debt
+### Claude Panel
 
-### Full Product Context via MCP
+**Chat tab** — Freeform conversation with full project awareness. Claude knows which file is open, the full project context from `.unshell/CLAUDE.md`, the file tree, and the current phase. Claude can create/edit files, search the web, and generate any output format.
 
-Natively connects to your internal tools (GitHub, Jira, Notion, databases) via the Model Context Protocol. Claude always has the full picture — just like Cursor indexes your entire repo.
+**Workflows tab** — Structured multi-step pipelines that produce specific outputs:
 
-### Local-First Privacy
+1. **Idea Generation & Validation** — Problem canvas, idea angles, validation matrix, decision doc
+2. **Market Research & Competitive Analysis** — Market landscape, competitor deep dive, gap analysis, opportunity brief
+3. **TAM/SAM/SOM Sizing** — Assumptions log, top-down model, bottom-up model, sizing summary
+4. **PRD & Spec Writing** — User personas, user stories, PRD, technical considerations
+5. **Pitch Deck Creation** — Deck outline, content generation, interactive refinement
+6. **Wireframe Generation** — Screen inventory, individual screen generation, flow connection
 
-All processing happens on your machine. Internal data never touches a centralized server. Your product strategy stays yours.
+## Phase System
+
+Projects progress through phases. Each phase suggests relevant workflows.
+
+```
+Ideation → Research → Sizing → Scoping → Documentation → Presentation
+```
+
+Phases are suggestions, not gates — you can jump around freely.
+
+## Auto-Managed Context
+
+The `.unshell/CLAUDE.md` file is what makes Unshell fundamentally different from using Claude in a browser. Instead of manually writing CLAUDE.md every time, Unshell maintains it automatically — tracking decisions, active documents, open questions, assumptions, and phase transitions.
 
 ## Architecture
 
-| Component            | Technology                       |
-| -------------------- | -------------------------------- |
-| **Engine**           | Electron desktop application     |
-| **Intelligence**     | Claude Agent SDK (local)         |
-| **GUI-Agent Bridge** | Agent Client Protocol (ACP)      |
-| **Data Connections** | Model Context Protocol (MCP)     |
-| **Cost**             | $0 API fees (subscription-based) |
+| Component | Technology |
+| --------- | ---------- |
+| **Shell** | Electron desktop application |
+| **Frontend** | React (three-panel layout) |
+| **Editor** | TipTap (ProseMirror-based) |
+| **Intelligence** | Claude Code via ACP |
+| **Storage** | Plain filesystem (no database) |
+| **File Watching** | chokidar |
+| **Workflow Engine** | JSON-defined state machine |
+| **Cost** | $0 API fees (uses existing Claude subscription) |
+
+## Design Principles
+
+1. **Files are the source of truth.** Everything is markdown/HTML on disk. No proprietary format. No lock-in.
+2. **Claude is the engine, not the product.** The UI makes Claude Code's capabilities accessible — it doesn't rebuild them.
+3. **Opinionated workflows beat flexible tools.** Structured pipelines save you from staring at a blank page.
+4. **Context is everything.** Auto-managed `.unshell/CLAUDE.md` is the most important technical feature.
+5. **Start rough, refine later.** HTML wireframes won't look like Figma. Markdown decks won't look like Keynote. The value is speed of iteration with Claude.
+6. **One project, one folder, one workspace.** No cross-project features. No sharing. No collaboration. One human + one AI + one product idea.
 
 ## Prerequisites
 

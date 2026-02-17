@@ -4,7 +4,35 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Unshell is "Cursor for product teams" — a desktop app that brings Claude's agentic workflows into a purpose-built GUI for product managers, designers, and analysts. Just as Cursor embedded AI into the developer's code editor to transform software engineering workflows, Unshell embeds AI into a product workspace to transform product team workflows. It uses the Claude Agent SDK locally with users' existing Claude Pro/Max subscriptions (no API keys needed). The core value proposition: eliminate the CLI barrier and context-switching tax that prevent product teams from leveraging AI at the same depth developers do.
+Unshell is "Claude Code for Product Teams — with a UI instead of a terminal." It's a desktop app that wraps Claude Code (via ACP) with a purpose-built UI for product work. It replaces the need to juggle Notion, Google Docs, Figma, Canva, Miro, and a terminal by providing a single workspace where Claude Code does the heavy lifting and the UI handles rendering, editing, and organizing the outputs.
+
+### Core Concept: Project = Folder
+
+A project IS a folder on disk. Everything is plain markdown/HTML files. No database, no proprietary format. The `.unshell/` directory holds auto-managed metadata (`CLAUDE.md`, `project.json`, `workflow-state.json`).
+
+### App Layout
+
+Three-panel workspace:
+- **Explorer** (left): Real filesystem tree of the project folder
+- **Editor/Viewer** (center): Multi-format engine — rich markdown (TipTap), HTML wireframe viewer, slide deck viewer, Mermaid diagram renderer
+- **Claude Panel** (right): ACP-connected Claude Code with Chat tab (freeform) and Workflows tab (structured multi-step pipelines)
+
+### Key Subsystems
+
+- **Annotation System**: Select text → floating toolbar (Discuss, Refine, Challenge, Expand, Source, Delete) → threaded conversation in Claude Panel
+- **Workflow Engine**: 6 structured workflows (Idea Generation, Market Research, TAM/SAM/SOM, PRD & Spec, Pitch Deck, Wireframes) — JSON-defined state machines with step-by-step outputs
+- **Phase System**: Ideation → Research → Sizing → Scoping → Documentation → Presentation (suggestions, not gates)
+- **Auto-Managed Context**: `.unshell/CLAUDE.md` auto-updates with decisions, active documents, open questions, assumptions, and phase transitions
+- **Callout Blocks**: `[!insight]`, `[!decision]`, `[!assumption]`, `[!question]`, `[!risk]` — structured vocabulary that Claude uses and reads automatically
+
+### Design Principles
+
+1. Files are the source of truth — no lock-in, no proprietary format
+2. Claude is the engine, not the product — build the UI layer, don't rebuild Claude's capabilities
+3. Opinionated workflows beat flexible tools
+4. Context is everything — auto-managed CLAUDE.md is the most important technical feature
+5. Start rough, refine later — speed of iteration over pixel-perfection
+6. One project, one folder, one workspace — solo tool, no collaboration features
 
 ## Development Commands
 
@@ -29,6 +57,16 @@ pnpm test:watch
 ```
 
 ## Architecture
+
+### High-Level Components
+
+- **Electron Shell**: Three-panel React frontend (Explorer, Editor, Claude Panel)
+- **Editor**: TipTap (ProseMirror-based) for markdown with custom blocks (callouts, mermaid, HTML embeds)
+- **File System**: Plain files on disk + chokidar watcher — changes by Claude via ACP trigger UI updates
+- **ACP Integration**: Electron main process connects to Claude Code via ACP; every message includes current CLAUDE.md as context
+- **Workflow Engine**: JSON-defined state machine in main process, persisted in `.unishell/workflow-state.json`
+- **Wireframe Rendering**: Sandboxed iframe/webview, no network access, viewport controls
+- **Deck Rendering**: Markdown slides split on `---`, rendered as styled containers with Mermaid support
 
 ### Electron Process Model
 
