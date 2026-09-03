@@ -28,6 +28,25 @@ currently at the foundation stage; do not assume product features already exist.
 As the application grows, move features into focused modules and keep
 `src/main.rs` limited to application startup and top-level composition.
 
+## Design system and development surfaces
+
+- Refer to `src/theme.rs` when designing or implementing UI. Components must
+  consume semantic theme roles (canvas, surface, text, border, accent, and
+  status) instead of introducing fixed colour values.
+- Preserve the established design language: editorial display hierarchy,
+  operational mono metadata, fine rules, compact low-radius controls, and
+  evidence-first developer interface patterns.
+- Use `src/design_system.rs` as the living component specimen. Add or update a
+  representative specimen when introducing a reusable UI pattern or semantic
+  theme role.
+- Development-only tools, routes, inspectors, and design-system entry points
+  must be compiled behind `#[cfg(debug_assertions)]`. Do not leave a release
+  control, shortcut, route, or module path that can expose a development
+  surface to packaged users.
+- When changing a development-only surface, verify both the debug build and an
+  optimized release build. The release build must compile without the
+  development module.
+
 ## Development
 
 Use `just` commands when available:

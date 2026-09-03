@@ -26,6 +26,19 @@ The repository contains a minimal native GPUI application that establishes the
 technical foundation. Product features, including the code viewer, have not been
 built yet.
 
+### Development design language
+
+Debug builds include an **Open Design Language** entry point on the foundation
+screen. It is a living component specimen for Unshell's editorial,
+instrument-panel-inspired interface: typography, action hierarchy, telemetry,
+commands, and status states. The preview includes bundled semantic themes—
+Unshell Dark, Dracula, Catppuccin Mocha, Nord, Tokyo Night, and GitHub Dark—so components
+are exercised against roles rather than a fixed colour palette.
+
+The root workspace enables this entry point only behind Rust's
+`debug_assertions` configuration. Optimized release builds have no route or
+control that can open it, so it is never exposed in a packaged application.
+
 ## Prerequisites
 
 - Rust 1.94 or newer
@@ -67,7 +80,9 @@ just run
 ```text
 .
 ├── src/
-│   └── main.rs       # Native GPUI application entry point
+│   ├── design_system.rs # Development-only design specimen
+│   ├── main.rs       # Native GPUI application bootstrap and root workspace
+│   └── theme.rs      # Semantic theme definitions used by application UI
 ├── Cargo.toml        # Rust package and dependencies
 ├── flake.nix         # Reproducible development environment
 └── justfile          # Common development commands
