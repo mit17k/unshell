@@ -26,19 +26,22 @@
               clippy
               just
               pkg-config
+              rust-analyzer
               rustc
               rustfmt
             ]
-            ++ pkgs.lib.optionals pkgs.stdenv.isLinux [
+            ++ pkgs.lib.optionals pkgs.stdenv.hostPlatform.isLinux [
+              fontconfig
+              freetype
               libxkbcommon
               vulkan-loader
               wayland
             ]
-            ++ pkgs.lib.optionals pkgs.stdenv.isDarwin [
+            ++ pkgs.lib.optionals pkgs.stdenv.hostPlatform.isDarwin [
               libiconv
             ];
 
-          LD_LIBRARY_PATH = pkgs.lib.optionalString pkgs.stdenv.isLinux (
+          LD_LIBRARY_PATH = pkgs.lib.optionalString pkgs.stdenv.hostPlatform.isLinux (
             pkgs.lib.makeLibraryPath [
               pkgs.libxkbcommon
               pkgs.vulkan-loader

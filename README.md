@@ -11,21 +11,25 @@ alongside real developer workflows.
 
 - **Developer workspace:** built for day-to-day software development with coding
   agents.
+- **Code-native foundation:** a performant, deeply integrated code viewer is a
+  core workspace requirement.
 - **Desktop only:** Unshell is a native application, not a browser application.
-- **Rust and iced:** the application shell and interface are built with
-  [Rust](https://www.rust-lang.org/) and [iced](https://iced.rs/).
+- **Rust and GPUI:** the application shell and interface are built with
+  [Rust](https://www.rust-lang.org/) and [GPUI](https://crates.io/crates/gpui),
+  the GPU-accelerated UI framework behind Zed.
 - **Focused foundation:** features will be added deliberately as the workspace
   model takes shape.
 
 ## Status
 
-The previous Electron/React prototype has been removed. The repository now
-contains a minimal native iced application that establishes the new technical
-direction.
+The repository contains a minimal native GPUI application that establishes the
+technical foundation. Product features, including the code viewer, have not been
+built yet.
 
 ## Prerequisites
 
-- Rust 1.88 or newer
+- Rust 1.94 or newer
+- Xcode command-line tools when developing on macOS
 - [just](https://github.com/casey/just) (optional)
 - [Nix](https://nixos.org/download/) with flakes and
   [direnv](https://direnv.net/) (optional)
@@ -63,7 +67,7 @@ just run
 ```text
 .
 ├── src/
-│   └── main.rs       # Native iced application entry point
+│   └── main.rs       # Native GPUI application entry point
 ├── Cargo.toml        # Rust package and dependencies
 ├── flake.nix         # Reproducible development environment
 └── justfile          # Common development commands
@@ -71,5 +75,6 @@ just run
 
 ## Platform scope
 
-Unshell targets native desktop platforms supported by iced. Web, mobile, and
-server deployments are outside the project scope.
+The initial platform scope is macOS and Linux, matching GPUI's currently
+documented support. Web, mobile, and server deployments are outside the project
+scope.

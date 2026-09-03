@@ -2,9 +2,10 @@
 name = "unshell"
 version = "0.1.0"
 edition = "2024"
-rust-version = "1.88"
+rust-version = "1.94"
 description = "A desktop developer workspace for agentic coding"
 publish = false
 
 [dependencies]
-iced = "0.14"
+# Avoid requiring the full Xcode Metal toolchain during macOS development.
+gpui = { version = "0.2.2", features = ["runtime_shaders"] }
