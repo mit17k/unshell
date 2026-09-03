@@ -1,0 +1,10 @@
+[package]
+name = "unshell"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.88"
+description = "A desktop developer workspace for agentic coding"
+publish = false
+
+[dependencies]
+iced = "0.14"

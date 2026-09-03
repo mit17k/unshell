@@ -1,45 +1,40 @@
-# Unshell - Electron Application
-# Run 'just' to see all available commands
+# Unshell development commands
 
-# Default command - show help
 default:
     @just --list
 
-# Initialize the development environment
+# Initialize the optional direnv environment
 init:
-    @echo "Initializing development environment..."
     direnv allow
-    @echo "Environment initialized. Please restart your shell or run 'direnv reload'"
 
-# Install all dependencies
-deps:
-    pnpm install
-    node node_modules/electron/install.js
+# Run the desktop application
+run:
+    cargo run
 
-# Start the development server (Electron in dev mode)
-server:
-    pnpm run dev
+# Type-check the project
+check:
+    cargo check
 
-# Build the application for production
+# Build a debug binary
 build:
-    pnpm run build
+    cargo build
 
-# Format code
+# Build an optimized binary
+build-release:
+    cargo build --release
+
+# Format Rust source
 format:
-    pnpm run format
+    cargo fmt --all
 
-# Check code formatting without making changes
+# Verify Rust formatting
 format-check:
-    pnpm run format:check
+    cargo fmt --all -- --check
 
-# Fix linting issues
+# Run Clippy and deny warnings
 lint:
-    pnpm run lint:fix
-
-# Check for linting issues without fixing
-lint-check:
-    pnpm run lint
+    cargo clippy --all-targets --all-features -- -D warnings
 
 # Run tests
 test:
-    pnpm run test
+    cargo test --all-targets

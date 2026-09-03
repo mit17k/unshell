@@ -1,5 +1,5 @@
 {
-  description = "Unshell - Electron application development environment";
+  description = "Unshell desktop development environment";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -19,46 +19,36 @@
       in
       {
         devShells.default = pkgs.mkShell {
-          buildInputs =
+          packages =
             with pkgs;
             [
-              # Node.js and pnpm
-              nodejs_20
-              pnpm
-
-              # Build tools
+              cargo
+              clippy
               just
-
-              # Electron dependencies (platform-specific)
+              pkg-config
+              rustc
+              rustfmt
             ]
             ++ pkgs.lib.optionals pkgs.stdenv.isLinux [
-              # Linux-specific dependencies for Electron
-              xorg.libX11
-              xorg.libXScrnSaver
-              xorg.libXtst
-              nss
-              nspr
-              alsa-lib
-              cups
-              libdrm
-              expat
               libxkbcommon
-              mesa
-              pango
-              cairo
-              atk
-              at-spi2-atk
-              dbus
-              gtk3
-              gdk-pixbuf
-              glib
+              vulkan-loader
+              wayland
+            ]
+            ++ pkgs.lib.optionals pkgs.stdenv.isDarwin [
+              libiconv
             ];
+
+          LD_LIBRARY_PATH = pkgs.lib.optionalString pkgs.stdenv.isLinux (
+            pkgs.lib.makeLibraryPath [
+              pkgs.libxkbcommon
+              pkgs.vulkan-loader
+              pkgs.wayland
+            ]
+          );
 
           shellHook = ''
             echo "Unshell development environment loaded"
-            echo "Node.js: $(node --version)"
-            echo "pnpm: $(pnpm --version)"
-            echo ""
+            echo "Rust: $(rustc --version)"
             echo "Run 'just' to see available commands"
           '';
         };
