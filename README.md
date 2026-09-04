@@ -1,16 +1,22 @@
 # Unshell
 
-Unshell is a desktop developer workspace for agentic coding.
+Unshell is a highly opinionated desktop developer workspace for agentic and
+non-agentic coding.
 
 The goal is to give developers one focused, native place for the parts of an
 agentic workflow: projects, code, agents, terminals, context, and the tools that
-connect them. Unshell is at the foundation stage; its feature set will evolve
-alongside real developer workflows.
+connect them. It deliberately prescribes how a workspace is laid out instead
+of trying to fit every development style. That trade-off is central to the
+product: developers who prefer a different workflow may be better served by a
+less opinionated tool.
 
 ## Product direction
 
 - **Developer workspace:** built for day-to-day software development with coding
-  agents.
+  agents or without them.
+- **Opinionated by design:** Unshell owns a predictable workspace structure so
+  its Git, worktree, environment, knowledge, terminal, and agent features can
+  cooperate without per-project setup conventions.
 - **Code-native foundation:** a performant, deeply integrated code viewer is a
   core workspace requirement.
 - **Desktop only:** Unshell is a native application, not a browser application.
@@ -22,9 +28,35 @@ alongside real developer workflows.
 
 ## Status
 
-The repository contains a minimal native GPUI application that establishes the
-technical foundation. Product features, including the code viewer, have not been
-built yet.
+The first product surface manages local Unshell workspaces. A workspace is
+created beneath a parent directory selected by the user and registered in a
+private, platform-local SQLite database. Product features such as repository
+management and the code viewer will build on that foundation.
+
+### Managed workspace layout
+
+Unshell creates workspaces with this contract:
+
+```text
+<workspace-name>/
+├── repos/
+├── trees/
+├── knowledge/
+├── nix/
+│   ├── env.nix
+│   └── tools.nix
+├── flake.nix
+├── justfile
+├── .envrc
+├── CONTRIBUTION.md
+├── CLAUDE.md -> CONTRIBUTION.md
+└── AGENTS.md -> CONTRIBUTION.md
+```
+
+Existing destinations are never merged into or overwritten. `repos/` contains
+canonical checkouts, `trees/` contains isolated Git worktrees, `knowledge/`
+contains durable project context, and the Nix/direnv files provide the shared
+development environment.
 
 ### Development design language
 
@@ -79,11 +111,13 @@ just run
 
 ```text
 .
-├── src/
-│   ├── design_system.rs # Development-only design specimen
-│   ├── main.rs       # Native GPUI application bootstrap and root workspace
-│   └── theme.rs      # Semantic theme definitions used by application UI
-├── Cargo.toml        # Rust package and dependencies
+├── crates/
+│   ├── unshell/       # Native binary and application startup
+│   ├── unshell-app/   # GPUI composition and feature flows
+│   ├── unshell-core/  # GPUI-free domain models and validation
+│   ├── unshell-local/ # SQLite and local filesystem adapters
+│   └── unshell-ui/    # Semantic themes and reusable GPUI elements
+├── Cargo.toml         # Workspace members and shared dependencies
 ├── flake.nix         # Reproducible development environment
 └── justfile          # Common development commands
 ```

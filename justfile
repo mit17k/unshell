@@ -9,19 +9,19 @@ init:
 
 # Run the desktop application
 run:
-    cargo run
+    cargo run -p unshell
 
 # Type-check the project
 check:
-    cargo check
+    cargo check --workspace
 
 # Build a debug binary
 build:
-    cargo build
+    cargo build --workspace
 
 # Build an optimized binary
 build-release:
-    cargo build --release
+    cargo build --workspace --release
 
 # Format Rust source
 format:
@@ -33,8 +33,8 @@ format-check:
 
 # Run Clippy and deny warnings
 lint:
-    cargo clippy --all-targets --all-features -- -D warnings
+    cargo clippy --workspace --all-targets --all-features -- -D warnings
 
 # Run tests
 test:
-    cargo test --all-targets
+    cargo test --workspace --all-targets

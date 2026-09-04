@@ -1,11 +1,33 @@
-[package]
-name = "unshell"
+[workspace]
+members = [
+    "crates/unshell",
+    "crates/unshell-app",
+    "crates/unshell-core",
+    "crates/unshell-local",
+    "crates/unshell-ui",
+]
+default-members = ["crates/unshell"]
+resolver = "3"
+
+[workspace.package]
 version = "0.1.0"
 edition = "2024"
 rust-version = "1.94"
-description = "A desktop developer workspace for agentic coding"
+description = "A highly opinionated desktop developer workspace for agentic and non-agentic coding"
 publish = false
 
-[dependencies]
+[workspace.dependencies]
+directories = "6.0.0"
 # Avoid requiring the full Xcode Metal toolchain during macOS development.
-gpui = { version = "0.2.2", features = ["runtime_shaders"] }
+gpui = { version = "=0.2.2", features = ["runtime_shaders"] }
+rusqlite = { version = "0.40.2", features = ["bundled"] }
+rustix = { version = "1.1.4", features = ["fs"] }
+tempfile = "3.27.0"
+thiserror = "2.0.20"
+unicode-segmentation = "1.13.3"
+uuid = { version = "1.26.0", features = ["v7"] }
+
+unshell-app = { path = "crates/unshell-app" }
+unshell-core = { path = "crates/unshell-core" }
+unshell-local = { path = "crates/unshell-local" }
+unshell-ui = { path = "crates/unshell-ui" }

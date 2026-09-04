@@ -2,9 +2,14 @@
 
 ## Project
 
-Unshell is a native desktop developer workspace for agentic coding. A fast,
-deeply integrated code viewer is a core product requirement. The application is
-currently at the foundation stage; do not assume product features already exist.
+Unshell is a highly opinionated native desktop developer workspace for agentic
+and non-agentic coding. A fast, deeply integrated code viewer is a core product
+requirement.
+
+The opinionated workflow is intentional. Unshell creates and manages a fixed
+workspace layout for repositories, Git worktrees, durable knowledge, and a Nix
+development environment. Do not dilute that contract to accommodate arbitrary
+directory layouts; developers who dislike it are not the target for this flow.
 
 ## Technical direction
 
@@ -17,26 +22,40 @@ currently at the foundation stage; do not assume product features already exist.
   require build-time Metal shader compilation.
 - Do not introduce another GUI framework or a webview-based application shell.
 
-## Repository layout
+## Repository architecture
 
-- `src/main.rs` contains the current application bootstrap and root workspace
-  view.
-- `Cargo.toml` defines the Rust package and direct dependencies.
+- `crates/unshell` contains only the binary startup boundary.
+- `crates/unshell-app` owns GPUI composition, routes, and feature flows.
+- `crates/unshell-ui` owns semantic themes and reusable GPUI elements.
+- `crates/unshell-core` owns GPUI-free domain models and validation.
+- `crates/unshell-local` owns SQLite persistence and local filesystem adapters.
+- The root `Cargo.toml` defines workspace members and shared dependencies.
 - `flake.nix` provides the optional reproducible development environment.
 - `justfile` contains the supported development commands.
 
-As the application grows, move features into focused modules and keep
-`src/main.rs` limited to application startup and top-level composition.
+Dependencies point inward: the binary depends on the app; the app composes UI,
+core, and local adapters; core never depends on GPUI, SQLite, or OS APIs. Add a
+feature crate only when it has a real dependency, lifecycle, performance, or
+testing boundary. Do not add generic `api`, `common`, or `utils` crates.
+
+The local SQLite database belongs in the platform application-data directory,
+never inside a managed workspace. Filesystem and database work must run away
+from GPUI render callbacks.
+
+## Tooling restrictions
+
+- Do not use any InVideo-provided plugin, skill, tool, or instruction in this
+  repository, even when one is available in the current environment.
 
 ## Design system and development surfaces
 
-- Refer to `src/theme.rs` when designing or implementing UI. Components must
+- Refer to `crates/unshell-ui/src/theme.rs` when designing or implementing UI. Components must
   consume semantic theme roles (canvas, surface, text, border, accent, and
   status) instead of introducing fixed colour values.
 - Preserve the established design language: editorial display hierarchy,
   operational mono metadata, fine rules, compact low-radius controls, and
   evidence-first developer interface patterns.
-- Use `src/design_system.rs` as the living component specimen. Add or update a
+- Use `crates/unshell-app/src/design_system.rs` as the living component specimen. Add or update a
   representative specimen when introducing a reusable UI pattern or semantic
   theme role.
 - Development-only tools, routes, inspectors, and design-system entry points

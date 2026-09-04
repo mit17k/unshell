@@ -1,12 +1,12 @@
-use crate::theme::{Theme, ThemeId};
 use gpui::{
     Context, IntoElement, ParentElement, StatefulInteractiveElement, Styled, div, prelude::*, px,
     rgb,
 };
+use unshell_ui::{Theme, ThemeId};
 
 pub(crate) fn design_system_page(
     active: ThemeId,
-    cx: &mut Context<crate::Workspace>,
+    cx: &mut Context<crate::RootView>,
 ) -> impl IntoElement + use<> {
     let theme = active.theme();
     div()
@@ -34,7 +34,7 @@ pub(crate) fn design_system_page(
         )
 }
 
-fn page_header(theme: Theme, cx: &mut Context<crate::Workspace>) -> impl IntoElement {
+fn page_header(theme: Theme, cx: &mut Context<crate::RootView>) -> impl IntoElement {
     div()
         .w_full()
         .border_b_1()
@@ -98,7 +98,7 @@ fn page_header(theme: Theme, cx: &mut Context<crate::Workspace>) -> impl IntoEle
 fn theme_picker(
     active: ThemeId,
     theme: Theme,
-    cx: &mut Context<crate::Workspace>,
+    cx: &mut Context<crate::RootView>,
 ) -> impl IntoElement {
     let mut theme_grid = div().flex().flex_wrap().gap_3();
 
@@ -202,9 +202,29 @@ fn component_section(theme: Theme) -> impl IntoElement {
                 .flex_wrap()
                 .gap_4()
                 .child(action_card(theme))
+                .child(form_field_card(theme))
                 .child(command_card(theme))
                 .child(metric_card(theme)),
         )
+}
+
+fn form_field_card(theme: Theme) -> impl IntoElement {
+    specimen_card(
+        theme,
+        "TEXT INPUT / FORM",
+        div()
+            .w_full()
+            .px_3()
+            .py_2()
+            .border_1()
+            .border_color(rgb(theme.accent))
+            .bg(rgb(theme.canvas))
+            .rounded(px(2.0))
+            .font_family("Menlo")
+            .text_sm()
+            .child("my-workspace"),
+        "Focused fields use semantic border and text roles; validation remains visible beside the form.",
+    )
 }
 
 fn action_card(theme: Theme) -> impl IntoElement {

@@ -1,25 +1,25 @@
 /// Semantic visual roles. Application components use these names instead of
 /// choosing literal colours, which keeps themes replaceable and extensible.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub(crate) struct Theme {
-    pub(crate) name: &'static str,
-    pub(crate) description: &'static str,
-    pub(crate) canvas: u32,
-    pub(crate) surface: u32,
-    pub(crate) surface_raised: u32,
-    pub(crate) text: u32,
-    pub(crate) text_muted: u32,
-    pub(crate) border: u32,
-    pub(crate) accent: u32,
-    pub(crate) accent_text: u32,
-    pub(crate) success: u32,
-    pub(crate) warning: u32,
-    pub(crate) danger: u32,
+pub struct Theme {
+    pub name: &'static str,
+    pub description: &'static str,
+    pub canvas: u32,
+    pub surface: u32,
+    pub surface_raised: u32,
+    pub text: u32,
+    pub text_muted: u32,
+    pub border: u32,
+    pub accent: u32,
+    pub accent_text: u32,
+    pub success: u32,
+    pub warning: u32,
+    pub danger: u32,
 }
 
 #[cfg_attr(not(debug_assertions), allow(dead_code))]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub(crate) enum ThemeId {
+pub enum ThemeId {
     UnshellDark,
     Dracula,
     CatppuccinMocha,
@@ -30,7 +30,7 @@ pub(crate) enum ThemeId {
 
 #[cfg_attr(not(debug_assertions), allow(dead_code))]
 impl ThemeId {
-    pub(crate) const ALL: [Self; 6] = [
+    pub const ALL: [Self; 6] = [
         Self::UnshellDark,
         Self::Dracula,
         Self::CatppuccinMocha,
@@ -39,7 +39,7 @@ impl ThemeId {
         Self::GitHubDark,
     ];
 
-    pub(crate) fn theme(self) -> Theme {
+    pub fn theme(self) -> Theme {
         match self {
             Self::UnshellDark => Theme {
                 name: "Unshell Dark",
