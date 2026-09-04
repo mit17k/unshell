@@ -689,8 +689,15 @@ impl Element for TextElement {
             .line
             .take()
             .expect("line is shaped during prepaint");
-        line.paint(bounds.origin, window.line_height(), window, cx)
-            .expect("painting a shaped input line succeeds");
+        line.paint(
+            bounds.origin,
+            window.line_height(),
+            gpui::TextAlign::Left,
+            None,
+            window,
+            cx,
+        )
+        .expect("painting a shaped input line succeeds");
         if focus_handle.is_focused(window)
             && !disabled
             && let Some(cursor) = prepaint.cursor.take()

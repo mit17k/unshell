@@ -11,12 +11,16 @@ use gpui::{
     App, AppContext, Bounds, TitlebarOptions, WindowBounds, WindowDecorations, WindowOptions,
     point, px, size,
 };
+use gpui_kit::component::Root as KitRoot;
 use unshell_local::LocalWorkspaceService;
+use unshell_ui::{ThemeId, register_text_input_key_bindings};
 
 pub use root::RootView;
 
 pub fn run(cx: &mut App) {
-    unshell_ui::register_text_input_key_bindings(cx);
+    gpui_kit::init(cx);
+    register_text_input_key_bindings(cx);
+    ThemeId::UnshellDark.theme().apply_to_gpui_kit(cx);
 
     let startup = LocalWorkspaceService::open_default()
         .and_then(|service| {
@@ -39,7 +43,10 @@ pub fn run(cx: &mut App) {
             window_decorations: Some(WindowDecorations::Client),
             ..Default::default()
         },
-        |_window, cx| cx.new(|cx| RootView::new(startup, cx)),
+        |window, cx| {
+            let view = cx.new(|cx| RootView::new(startup, cx));
+            cx.new(|cx| KitRoot::new(view, window, cx).bordered(false))
+        },
     )
     .expect("failed to open the Unshell window");
 

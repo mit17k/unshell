@@ -115,6 +115,7 @@ impl RootView {
     #[cfg(debug_assertions)]
     pub(crate) fn select_theme(&mut self, theme: ThemeId, cx: &mut Context<Self>) {
         self.theme = theme;
+        theme.theme().apply_to_gpui_kit(cx);
         cx.notify();
     }
 

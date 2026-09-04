@@ -1,5 +1,7 @@
-use gpui::{App, Application};
+use gpui_kit::App;
 
 fn main() {
-    Application::new().run(|cx: &mut App| unshell_app::run(cx));
+    gpui_kit::application()
+        .with_assets(gpui_kit::assets::Assets)
+        .run(|cx: &mut App| unshell_app::run(cx));
 }

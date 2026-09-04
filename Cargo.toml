@@ -12,14 +12,16 @@ resolver = "3"
 [workspace.package]
 version = "0.1.0"
 edition = "2024"
-rust-version = "1.94"
+rust-version = "1.95"
 description = "A highly opinionated desktop developer workspace for agentic and non-agentic coding"
 publish = false
 
 [workspace.dependencies]
 directories = "6.0.0"
-# Avoid requiring the full Xcode Metal toolchain during macOS development.
-gpui = { version = "=0.2.2", features = ["runtime_shaders"] }
+# GPUI Kit pins this published GPUI snapshot. Its platform dependency keeps
+# runtime shader compilation enabled for macOS development.
+gpui = { package = "gpui-pre", version = "=0.3.3" }
+gpui-kit = { version = "=0.6.0" }
 rusqlite = { version = "0.40.2", features = ["bundled"] }
 rustix = { version = "1.1.4", features = ["fs"] }
 tempfile = "3.27.0"

@@ -21,8 +21,9 @@ less opinionated tool.
   core workspace requirement.
 - **Desktop only:** Unshell is a native application, not a browser application.
 - **Rust and GPUI:** the application shell and interface are built with
-  [Rust](https://www.rust-lang.org/) and [GPUI](https://crates.io/crates/gpui),
-  the GPU-accelerated UI framework behind Zed.
+  [Rust](https://www.rust-lang.org/), [GPUI](https://gpui.rs/), and
+  [GPUI Kit](https://gpui-kit.com/). Unshell owns the visual language while
+  GPUI Kit supplies native component behavior and interaction infrastructure.
 - **Focused foundation:** features will be added deliberately as the workspace
   model takes shape.
 
@@ -76,13 +77,18 @@ commands, and status states. The preview includes bundled semantic themes—
 Unshell Dark, Dracula, Catppuccin Mocha, Nord, Tokyo Night, and GitHub Dark—so components
 are exercised against roles rather than a fixed colour palette.
 
+The page also includes live GPUI Kit specimens and a categorized inventory of
+all 72 component surfaces available through `unshell-ui`. Kit components use
+the same semantic themes, compact radii, and low-chrome presentation as native
+Unshell elements.
+
 The root workspace enables this entry point only behind Rust's
 `debug_assertions` configuration. Optimized release builds have no route or
 control that can open it, so it is never exposed in a packaged application.
 
 ## Prerequisites
 
-- Rust 1.94 or newer
+- Rust 1.95 or newer
 - Xcode command-line tools when developing on macOS
 - [just](https://github.com/casey/just) (optional)
 - [Nix](https://nixos.org/download/) with flakes and
