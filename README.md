@@ -37,6 +37,11 @@ When ready workspaces exist, Unshell opens to a workspace index showing every
 managed name and path, with an action to create another workspace. A first-time
 installation goes directly to the setup flow.
 
+Selecting a workspace opens the main work area. That shell is guarded by the
+root application state: it cannot render unless a ready workspace has been
+selected. Its persistent left sidebar provides workspace navigation and a
+switcher for moving between managed workspaces or creating a new one.
+
 ### Managed workspace layout
 
 Unshell creates workspaces with this contract:

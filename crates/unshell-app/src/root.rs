@@ -3,7 +3,7 @@ use std::sync::Arc;
 use gpui::{
     Context, Entity, IntoElement, Render, Window, WindowControlArea, div, prelude::*, px, rgb,
 };
-use unshell_core::WorkspaceSummary;
+use unshell_core::{WorkspaceId, WorkspaceSummary};
 use unshell_local::LocalWorkspaceService;
 use unshell_ui::{Theme, ThemeId};
 
@@ -12,6 +12,7 @@ use crate::workspace_setup::{WorkspaceCreated, WorkspaceSetupView};
 enum Route {
     Setup(Entity<WorkspaceSetupView>),
     WorkspaceList,
+    WorkArea,
     StartupError(String),
 }
 
@@ -19,6 +20,8 @@ pub struct RootView {
     theme: ThemeId,
     service: Option<Arc<LocalWorkspaceService>>,
     workspaces: Vec<WorkspaceSummary>,
+    selected_workspace: Option<WorkspaceId>,
+    workspace_menu_open: bool,
     route: Route,
     #[cfg(debug_assertions)]
     pub(crate) show_design_system: bool,
@@ -40,6 +43,8 @@ impl RootView {
                     theme: ThemeId::UnshellDark,
                     service: Some(service),
                     workspaces,
+                    selected_workspace: None,
+                    workspace_menu_open: false,
                     route,
                     #[cfg(debug_assertions)]
                     show_design_system: false,
@@ -49,6 +54,8 @@ impl RootView {
                 theme: ThemeId::UnshellDark,
                 service: None,
                 workspaces: Vec::new(),
+                selected_workspace: None,
+                workspace_menu_open: false,
                 route: Route::StartupError(error),
                 #[cfg(debug_assertions)]
                 show_design_system: false,
@@ -61,6 +68,8 @@ impl RootView {
         let setup = cx.new(|cx| WorkspaceSetupView::new(service, theme, cx));
         cx.subscribe(&setup, |this, _, event: &WorkspaceCreated, cx| {
             crate::workspace_list::record_created(&mut this.workspaces, event.0.clone());
+            this.selected_workspace = None;
+            this.workspace_menu_open = false;
             this.route = Route::WorkspaceList;
             cx.notify();
         })
@@ -75,9 +84,32 @@ impl RootView {
         cx: &mut Context<Self>,
     ) {
         if let Some(service) = self.service.clone() {
+            self.selected_workspace = None;
+            self.workspace_menu_open = false;
             self.route = Self::setup_route(service, cx);
             cx.notify();
         }
+    }
+
+    pub(crate) fn select_workspace(&mut self, id: WorkspaceId, cx: &mut Context<Self>) {
+        if resolve_selected_workspace(&self.workspaces, Some(id)).is_some() {
+            self.selected_workspace = Some(id);
+            self.workspace_menu_open = false;
+            self.route = Route::WorkArea;
+            cx.notify();
+        }
+    }
+
+    pub(crate) fn toggle_workspace_menu(&mut self, cx: &mut Context<Self>) {
+        self.workspace_menu_open = !self.workspace_menu_open;
+        cx.notify();
+    }
+
+    pub(crate) fn show_workspace_index(&mut self, cx: &mut Context<Self>) {
+        self.selected_workspace = None;
+        self.workspace_menu_open = false;
+        self.route = Route::WorkspaceList;
+        cx.notify();
     }
 
     #[cfg(debug_assertions)]
@@ -237,8 +269,64 @@ impl Render for RootView {
                 crate::workspace_list::workspace_list(&self.workspaces, theme, cx)
                     .into_any_element()
             }
+            Route::WorkArea => {
+                if let Some(workspace) =
+                    resolve_selected_workspace(&self.workspaces, self.selected_workspace).cloned()
+                {
+                    crate::work_area::work_area(
+                        &workspace,
+                        &self.workspaces,
+                        self.workspace_menu_open,
+                        theme,
+                        cx,
+                    )
+                    .into_any_element()
+                } else {
+                    crate::workspace_list::workspace_list(&self.workspaces, theme, cx)
+                        .into_any_element()
+                }
+            }
             Route::StartupError(error) => Self::startup_error(error, theme).into_any_element(),
         };
         self.frame(theme, window, cx, content).into_any_element()
+    }
+}
+
+fn resolve_selected_workspace(
+    workspaces: &[WorkspaceSummary],
+    selected: Option<WorkspaceId>,
+) -> Option<&WorkspaceSummary> {
+    let selected = selected?;
+    workspaces.iter().find(|workspace| workspace.id == selected)
+}
+
+#[cfg(test)]
+mod tests {
+    use std::path::PathBuf;
+
+    use unshell_core::{WorkspaceId, WorkspaceName, WorkspaceSummary};
+
+    use super::resolve_selected_workspace;
+
+    fn summary(name: &str) -> WorkspaceSummary {
+        WorkspaceSummary {
+            id: WorkspaceId::new(),
+            name: WorkspaceName::new(name).unwrap(),
+            root: PathBuf::from("/tmp").join(name),
+        }
+    }
+
+    #[test]
+    fn work_area_requires_a_known_selected_workspace() {
+        let known = summary("known");
+        let unknown = summary("unknown");
+        let workspaces = [known.clone()];
+
+        assert!(resolve_selected_workspace(&workspaces, None).is_none());
+        assert!(resolve_selected_workspace(&workspaces, Some(unknown.id)).is_none());
+        assert_eq!(
+            resolve_selected_workspace(&workspaces, Some(known.id)),
+            Some(&known)
+        );
     }
 }

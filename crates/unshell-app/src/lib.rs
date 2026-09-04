@@ -1,6 +1,7 @@
 #[cfg(debug_assertions)]
 mod design_system;
 mod root;
+mod work_area;
 mod workspace_list;
 mod workspace_setup;
 

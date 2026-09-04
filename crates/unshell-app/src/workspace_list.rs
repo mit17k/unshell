@@ -11,7 +11,7 @@ pub(crate) fn workspace_list(
 ) -> impl IntoElement {
     let mut rows = div().flex().flex_col().gap_3();
     for (index, workspace) in workspaces.iter().enumerate() {
-        rows = rows.child(workspace_row(index, workspace, theme));
+        rows = rows.child(workspace_row(index, workspace, theme, cx));
     }
 
     div()
@@ -106,7 +106,13 @@ pub(crate) fn workspace_list(
         )
 }
 
-fn workspace_row(index: usize, workspace: &WorkspaceSummary, theme: Theme) -> impl IntoElement {
+fn workspace_row(
+    index: usize,
+    workspace: &WorkspaceSummary,
+    theme: Theme,
+    cx: &mut Context<RootView>,
+) -> impl IntoElement + use<> {
+    let id = workspace.id;
     let name = workspace.name.as_str().to_owned();
     let path = workspace.root.display().to_string();
 
@@ -123,6 +129,12 @@ fn workspace_row(index: usize, workspace: &WorkspaceSummary, theme: Theme) -> im
         .border_color(rgb(theme.border))
         .rounded(px(2.0))
         .bg(rgb(theme.surface))
+        .cursor_pointer()
+        .hover(move |style| {
+            style
+                .bg(rgb(theme.surface_raised))
+                .border_color(rgb(theme.accent))
+        })
         .child(
             div()
                 .w(px(36.0))
@@ -166,8 +178,9 @@ fn workspace_row(index: usize, workspace: &WorkspaceSummary, theme: Theme) -> im
                 .text_xs()
                 .text_color(rgb(theme.success))
                 .child(div().size(px(6.0)).rounded_full().bg(rgb(theme.success)))
-                .child("READY"),
+                .child("OPEN  →"),
         )
+        .on_click(cx.listener(move |this, _, _, cx| this.select_workspace(id, cx)))
 }
 
 pub(crate) fn record_created(workspaces: &mut Vec<WorkspaceSummary>, created: WorkspaceSummary) {

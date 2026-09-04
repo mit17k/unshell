@@ -204,9 +204,57 @@ fn component_section(theme: Theme) -> impl IntoElement {
                 .child(action_card(theme))
                 .child(form_field_card(theme))
                 .child(workspace_row_card(theme))
+                .child(workspace_switcher_card(theme))
                 .child(command_card(theme))
                 .child(metric_card(theme)),
         )
+}
+
+fn workspace_switcher_card(theme: Theme) -> impl IntoElement {
+    specimen_card(
+        theme,
+        "WORKSPACE / SWITCHER",
+        div()
+            .w_full()
+            .px_2()
+            .py_2()
+            .flex()
+            .items_center()
+            .gap_2()
+            .border_1()
+            .border_color(rgb(theme.border))
+            .bg(rgb(theme.canvas))
+            .rounded(px(2.0))
+            .child(
+                div()
+                    .size(px(22.0))
+                    .flex_none()
+                    .flex()
+                    .items_center()
+                    .justify_center()
+                    .rounded(px(2.0))
+                    .bg(rgb(theme.accent))
+                    .text_color(rgb(theme.accent_text))
+                    .child("◈"),
+            )
+            .child(
+                div()
+                    .min_w_0()
+                    .flex_1()
+                    .overflow_hidden()
+                    .text_sm()
+                    .font_weight(gpui::FontWeight::SEMIBOLD)
+                    .child("unshell"),
+            )
+            .child(
+                div()
+                    .font_family("Menlo")
+                    .text_xs()
+                    .text_color(rgb(theme.text_muted))
+                    .child("⌄"),
+            ),
+        "The sidebar starts with persistent workspace identity and one compact switching affordance.",
+    )
 }
 
 fn workspace_row_card(theme: Theme) -> impl IntoElement {
