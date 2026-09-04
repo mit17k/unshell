@@ -203,9 +203,58 @@ fn component_section(theme: Theme) -> impl IntoElement {
                 .gap_4()
                 .child(action_card(theme))
                 .child(form_field_card(theme))
+                .child(workspace_row_card(theme))
                 .child(command_card(theme))
                 .child(metric_card(theme)),
         )
+}
+
+fn workspace_row_card(theme: Theme) -> impl IntoElement {
+    specimen_card(
+        theme,
+        "WORKSPACE / INDEX ROW",
+        div()
+            .w_full()
+            .px_3()
+            .py_2()
+            .flex()
+            .items_center()
+            .gap_3()
+            .border_1()
+            .border_color(rgb(theme.border))
+            .bg(rgb(theme.canvas))
+            .rounded(px(2.0))
+            .child(
+                div()
+                    .font_family("Menlo")
+                    .text_xs()
+                    .text_color(rgb(theme.accent))
+                    .child("01"),
+            )
+            .child(
+                div()
+                    .flex_1()
+                    .flex()
+                    .flex_col()
+                    .gap_1()
+                    .child(div().text_sm().child("unshell"))
+                    .child(
+                        div()
+                            .font_family("Menlo")
+                            .text_xs()
+                            .text_color(rgb(theme.text_muted))
+                            .child("~/Developer/unshell"),
+                    ),
+            )
+            .child(
+                div()
+                    .font_family("Menlo")
+                    .text_xs()
+                    .text_color(rgb(theme.success))
+                    .child("READY"),
+            ),
+        "Indexed rows prioritize workspace identity, filesystem evidence, and current state.",
+    )
 }
 
 fn form_field_card(theme: Theme) -> impl IntoElement {

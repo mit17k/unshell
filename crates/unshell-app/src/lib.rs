@@ -1,6 +1,7 @@
 #[cfg(debug_assertions)]
 mod design_system;
 mod root;
+mod workspace_list;
 mod workspace_setup;
 
 use std::sync::Arc;

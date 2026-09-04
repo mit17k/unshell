@@ -33,6 +33,10 @@ created beneath a parent directory selected by the user and registered in a
 private, platform-local SQLite database. Product features such as repository
 management and the code viewer will build on that foundation.
 
+When ready workspaces exist, Unshell opens to a workspace index showing every
+managed name and path, with an action to create another workspace. A first-time
+installation goes directly to the setup flow.
+
 ### Managed workspace layout
 
 Unshell creates workspaces with this contract:

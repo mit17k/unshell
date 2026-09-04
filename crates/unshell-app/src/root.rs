@@ -11,13 +11,14 @@ use crate::workspace_setup::{WorkspaceCreated, WorkspaceSetupView};
 
 enum Route {
     Setup(Entity<WorkspaceSetupView>),
-    Workspace(WorkspaceSummary),
+    WorkspaceList,
     StartupError(String),
 }
 
 pub struct RootView {
     theme: ThemeId,
     service: Option<Arc<LocalWorkspaceService>>,
+    workspaces: Vec<WorkspaceSummary>,
     route: Route,
     #[cfg(debug_assertions)]
     pub(crate) show_design_system: bool,
@@ -30,14 +31,15 @@ impl RootView {
     ) -> Self {
         match startup {
             Ok((service, workspaces)) => {
-                let route = workspaces
-                    .into_iter()
-                    .next()
-                    .map(Route::Workspace)
-                    .unwrap_or_else(|| Self::setup_route(service.clone(), cx));
+                let route = if workspaces.is_empty() {
+                    Self::setup_route(service.clone(), cx)
+                } else {
+                    Route::WorkspaceList
+                };
                 Self {
                     theme: ThemeId::UnshellDark,
                     service: Some(service),
+                    workspaces,
                     route,
                     #[cfg(debug_assertions)]
                     show_design_system: false,
@@ -46,6 +48,7 @@ impl RootView {
             Err(error) => Self {
                 theme: ThemeId::UnshellDark,
                 service: None,
+                workspaces: Vec::new(),
                 route: Route::StartupError(error),
                 #[cfg(debug_assertions)]
                 show_design_system: false,
@@ -57,14 +60,20 @@ impl RootView {
         let theme = ThemeId::UnshellDark.theme();
         let setup = cx.new(|cx| WorkspaceSetupView::new(service, theme, cx));
         cx.subscribe(&setup, |this, _, event: &WorkspaceCreated, cx| {
-            this.route = Route::Workspace(event.0.clone());
+            crate::workspace_list::record_created(&mut this.workspaces, event.0.clone());
+            this.route = Route::WorkspaceList;
             cx.notify();
         })
         .detach();
         Route::Setup(setup)
     }
 
-    fn create_another(&mut self, _: &gpui::ClickEvent, _: &mut Window, cx: &mut Context<Self>) {
+    pub(crate) fn create_new_workspace(
+        &mut self,
+        _: &gpui::ClickEvent,
+        _: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
         if let Some(service) = self.service.clone() {
             self.route = Self::setup_route(service, cx);
             cx.notify();
@@ -180,62 +189,6 @@ impl RootView {
             )
     }
 
-    fn workspace_home(
-        &self,
-        workspace: &WorkspaceSummary,
-        theme: Theme,
-        cx: &mut Context<Self>,
-    ) -> impl IntoElement {
-        let name = workspace.name.as_str().to_owned();
-        let path = workspace.root.display().to_string();
-        div()
-            .flex_1()
-            .w_full()
-            .flex()
-            .flex_col()
-            .items_center()
-            .justify_center()
-            .gap_4()
-            .px_8()
-            .bg(rgb(theme.canvas))
-            .text_color(rgb(theme.text))
-            .child(
-                div()
-                    .font_family("Menlo")
-                    .text_xs()
-                    .text_color(rgb(theme.success))
-                    .child("WORKSPACE · READY"),
-            )
-            .child(div().font_family("Georgia").text_3xl().child(name))
-            .child(
-                div()
-                    .max_w(px(720.0))
-                    .font_family("Menlo")
-                    .text_sm()
-                    .text_color(rgb(theme.text_muted))
-                    .child(path),
-            )
-            .child(
-                div()
-                    .id("create-another-workspace")
-                    .mt_3()
-                    .px_4()
-                    .py_2()
-                    .border_1()
-                    .border_color(rgb(theme.border))
-                    .rounded(px(2.0))
-                    .cursor_pointer()
-                    .text_sm()
-                    .hover(move |style| {
-                        style
-                            .bg(rgb(theme.surface_raised))
-                            .border_color(rgb(theme.accent))
-                    })
-                    .child("Create another workspace")
-                    .on_click(cx.listener(Self::create_another)),
-            )
-    }
-
     fn startup_error(error: &str, theme: Theme) -> impl IntoElement {
         div()
             .flex_1()
@@ -280,8 +233,9 @@ impl Render for RootView {
 
         let content = match &self.route {
             Route::Setup(setup) => setup.clone().into_any_element(),
-            Route::Workspace(workspace) => {
-                self.workspace_home(workspace, theme, cx).into_any_element()
+            Route::WorkspaceList => {
+                crate::workspace_list::workspace_list(&self.workspaces, theme, cx)
+                    .into_any_element()
             }
             Route::StartupError(error) => Self::startup_error(error, theme).into_any_element(),
         };
