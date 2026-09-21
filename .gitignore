@@ -1,11 +1,15 @@
 # Rust build output
 /target/
+/node_modules/
 
 # Environment
 .env
 .env.*
 !.env.example
 .direnv/
+
+# Package manager cache
+.pnpm-store/
 
 # Logs
 *.log

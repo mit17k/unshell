@@ -1,47 +1,36 @@
 # Unshell
 
-Unshell is a highly opinionated desktop developer workspace for agentic and
-non-agentic coding.
+Unshell is a highly opinionated desktop developer workspace for agentic and non-agentic coding.
 
-The goal is to give developers one focused, native place for the parts of an
-agentic workflow: projects, code, agents, terminals, context, and the tools that
-connect them. It deliberately prescribes how a workspace is laid out instead
-of trying to fit every development style. That trade-off is central to the
-product: developers who prefer a different workflow may be better served by a
-less opinionated tool.
+The goal is to give developers one focused, native place for the parts of an agentic workflow: projects, code, agents,
+terminals, context, and the tools that connect them. It deliberately prescribes how a workspace is laid out instead of
+trying to fit every development style. That trade-off is central to the product: developers who prefer a different
+workflow may be better served by a less opinionated tool.
 
 ## Product direction
 
-- **Developer workspace:** built for day-to-day software development with coding
-  agents or without them.
-- **Opinionated by design:** Unshell owns a predictable workspace structure so
-  its Git, worktree, environment, knowledge, terminal, and agent features can
-  cooperate without per-project setup conventions.
-- **Code-native foundation:** a performant, deeply integrated code viewer is a
-  core workspace requirement.
+- **Developer workspace:** built for day-to-day software development with coding agents or without them.
+- **Opinionated by design:** Unshell owns a predictable workspace structure so its Git, worktree, environment,
+  knowledge, terminal, and agent features can cooperate without per-project setup conventions.
+- **Code-native foundation:** a performant, deeply integrated code viewer is a core workspace requirement.
 - **Desktop only:** Unshell is a native application, not a browser application.
-- **Rust and GPUI:** the application shell and interface are built with
-  [Rust](https://www.rust-lang.org/), [GPUI](https://gpui.rs/), and
-  [GPUI Kit](https://gpui-kit.com/). Unshell owns the visual language while
-  GPUI Kit supplies native component behavior and interaction infrastructure.
-- **Focused foundation:** features will be added deliberately as the workspace
-  model takes shape.
+- **Rust and GPUI:** the application shell and interface are built with [Rust](https://www.rust-lang.org/),
+  [GPUI](https://gpui.rs/), and [GPUI Kit](https://gpui-kit.com/). Unshell owns the visual language while GPUI Kit
+  supplies native component behavior and interaction infrastructure.
+- **Focused foundation:** features will be added deliberately as the workspace model takes shape.
 
 ## Status
 
-The first product surface manages local Unshell workspaces. A workspace is
-created beneath a parent directory selected by the user and registered in a
-private, platform-local SQLite database. Product features such as repository
-management and the code viewer will build on that foundation.
+The first product surface manages local Unshell workspaces. A workspace is created beneath a parent directory selected
+by the user and registered in a private, platform-local SQLite database. Product features such as repository management
+and the code viewer will build on that foundation.
 
-When ready workspaces exist, Unshell opens to a workspace index showing every
-managed name and path, with an action to create another workspace. A first-time
-installation goes directly to the setup flow.
+When ready workspaces exist, Unshell opens to a workspace index showing every managed name and path, with an action to
+create another workspace. A first-time installation goes directly to the setup flow.
 
-Selecting a workspace opens the main work area. That shell is guarded by the
-root application state: it cannot render unless a ready workspace has been
-selected. Its persistent left sidebar provides workspace navigation and a
-switcher for moving between managed workspaces or creating a new one.
+Selecting a workspace opens the main work area. That shell is guarded by the root application state: it cannot render
+unless a ready workspace has been selected. Its persistent left sidebar provides workspace navigation and a switcher for
+moving between managed workspaces or creating a new one.
 
 ### Managed workspace layout
 
@@ -63,36 +52,31 @@ Unshell creates workspaces with this contract:
 └── AGENTS.md -> CONTRIBUTION.md
 ```
 
-Existing destinations are never merged into or overwritten. `repos/` contains
-canonical checkouts, `trees/` contains isolated Git worktrees, `knowledge/`
-contains durable project context, and the Nix/direnv files provide the shared
+Existing destinations are never merged into or overwritten. `repos/` contains canonical checkouts, `trees/` contains
+isolated Git worktrees, `knowledge/` contains durable project context, and the Nix/direnv files provide the shared
 development environment.
 
 ### Development design language
 
-Debug builds include an **Open Design Language** entry point on the foundation
-screen. It is a living component specimen for Unshell's editorial,
-instrument-panel-inspired interface: typography, action hierarchy, telemetry,
-commands, and status states. The preview includes bundled semantic themes—
-Unshell Dark, Dracula, Catppuccin Mocha, Nord, Tokyo Night, and GitHub Dark—so components
-are exercised against roles rather than a fixed colour palette.
+Debug builds include an **Open Design Language** entry point on the foundation screen. It is a living component specimen
+for Unshell's editorial, instrument-panel-inspired interface: typography, action hierarchy, telemetry, commands, and
+status states. The preview includes bundled semantic themes—Unshell Dark, Dracula, Catppuccin Mocha, Nord, Tokyo Night,
+and GitHub Dark—so components are exercised against roles rather than a fixed colour palette.
 
-The page also includes live GPUI Kit specimens and a categorized inventory of
-all 72 component surfaces available through `unshell-ui`. Kit components use
-the same semantic themes, compact radii, and low-chrome presentation as native
+The page also includes live GPUI Kit specimens and a categorized inventory of all 72 component surfaces available
+through `unshell-ui`. Kit components use the same semantic themes, compact radii, and low-chrome presentation as native
 Unshell elements.
 
-The root workspace enables this entry point only behind Rust's
-`debug_assertions` configuration. Optimized release builds have no route or
-control that can open it, so it is never exposed in a packaged application.
+The root workspace enables this entry point only behind Rust's `debug_assertions` configuration. Optimized release
+builds have no route or control that can open it, so it is never exposed in a packaged application.
 
 ## Prerequisites
 
 - Rust 1.95 or newer
+- Node.js 22 or newer and pnpm 10 (for Markdown tooling)
 - Xcode command-line tools when developing on macOS
 - [just](https://github.com/casey/just) (optional)
-- [Nix](https://nixos.org/download/) with flakes and
-  [direnv](https://direnv.net/) (optional)
+- [Nix](https://nixos.org/download/) with flakes and [direnv](https://direnv.net/) (optional)
 
 ## Getting started
 
@@ -106,21 +90,24 @@ Using the included development environment:
 
 ```bash
 direnv allow
+just deps
 just run
 ```
 
 ## Development commands
 
-| Command | Description |
-| --- | --- |
-| `just run` | Run Unshell in development mode |
-| `just check` | Type-check the project |
-| `just build` | Build a debug binary |
-| `just build-release` | Build an optimized binary |
-| `just test` | Run tests |
-| `just lint` | Run Clippy with warnings denied |
-| `just format` | Format Rust source |
-| `just format-check` | Verify Rust formatting |
+| Command              | Description                                        |
+| -------------------- | -------------------------------------------------- |
+| `just run`           | Run Unshell in development mode                    |
+| `just check`         | Type-check the project                             |
+| `just build`         | Build a debug binary                               |
+| `just build-release` | Build an optimized binary                          |
+| `just test`          | Run tests                                          |
+| `just lint`          | Run Clippy and Markdownlint with warnings denied   |
+| `just format`        | Format Rust source and Markdown documentation      |
+| `just format-check`  | Verify Rust and Markdown formatting                |
+| `just release-check` | Check the optimized build configuration            |
+| `just verify`        | Run every formatting, lint, test, and release gate |
 
 ## Project structure
 
@@ -132,6 +119,7 @@ just run
 │   ├── unshell-core/  # GPUI-free domain models and validation
 │   ├── unshell-local/ # SQLite and local filesystem adapters
 │   └── unshell-ui/    # Semantic themes and reusable GPUI elements
+├── docs/              # Development and contributor documentation
 ├── Cargo.toml         # Workspace members and shared dependencies
 ├── flake.nix         # Reproducible development environment
 └── justfile          # Common development commands
@@ -139,6 +127,5 @@ just run
 
 ## Platform scope
 
-The initial platform scope is macOS and Linux, matching GPUI's currently
-documented support. Web, mobile, and server deployments are outside the project
-scope.
+The initial platform scope is macOS and Linux, matching GPUI's currently documented support. Web, mobile, and server
+deployments are outside the project scope.

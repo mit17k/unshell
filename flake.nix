@@ -25,6 +25,8 @@
               cargo
               clippy
               just
+              nodejs_24
+              pnpm
               pkg-config
               rust-analyzer
               rustc
@@ -52,6 +54,7 @@
           shellHook = ''
             echo "Unshell development environment loaded"
             echo "Rust: $(rustc --version)"
+            echo "Node: $(node --version)"
             echo "Run 'just' to see available commands"
           '';
         };

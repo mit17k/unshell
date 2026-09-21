@@ -1,0 +1,5 @@
+{
+  "config": ".markdownlint.json",
+  "globs": ["**/*.md"],
+  "ignores": [".direnv/**", "node_modules/**", "target/**"]
+}

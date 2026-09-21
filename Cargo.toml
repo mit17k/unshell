@@ -16,6 +16,14 @@ rust-version = "1.95"
 description = "A highly opinionated desktop developer workspace for agentic and non-agentic coding"
 publish = false
 
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[workspace.lints.clippy]
+dbg_macro = "deny"
+todo = "deny"
+unimplemented = "deny"
+
 [workspace.dependencies]
 directories = "6.0.0"
 # GPUI Kit pins this published GPUI snapshot. Its platform dependency keeps

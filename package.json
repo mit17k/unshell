@@ -1,0 +1,19 @@
+{
+  "name": "unshell-development",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Repository-level documentation tooling for Unshell",
+  "scripts": {
+    "docs:format": "prettier --write \"**/*.md\"",
+    "docs:format:check": "prettier --check \"**/*.md\"",
+    "docs:lint": "markdownlint-cli2"
+  },
+  "devDependencies": {
+    "markdownlint-cli2": "0.18.1",
+    "prettier": "3.7.3"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "packageManager": "pnpm@10.28.0"
+}
