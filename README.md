@@ -120,6 +120,9 @@ just run
 │   ├── unshell-local/ # SQLite and local filesystem adapters
 │   └── unshell-ui/    # Semantic themes and reusable GPUI elements
 ├── docs/              # Development and contributor documentation
+├── CONTRIBUTING.md    # Shared repository guidance
+├── AGENTS.md           # Symlink to CONTRIBUTING.md
+├── CLAUDE.md           # Symlink to CONTRIBUTING.md
 ├── Cargo.toml         # Workspace members and shared dependencies
 ├── flake.nix         # Reproducible development environment
 └── justfile          # Common development commands
