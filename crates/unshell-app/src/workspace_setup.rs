@@ -54,6 +54,13 @@ impl WorkspaceSetupView {
         }
     }
 
+    pub(crate) fn set_theme(&mut self, theme: Theme, cx: &mut Context<Self>) {
+        self.theme = theme;
+        self.name_input
+            .update(cx, |input, cx| input.set_theme(theme, cx));
+        cx.notify();
+    }
+
     fn select_parent(&mut self, _: &gpui::ClickEvent, _: &mut Window, cx: &mut Context<Self>) {
         if matches!(
             self.phase,
