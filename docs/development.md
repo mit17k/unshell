@@ -1,46 +1,66 @@
 # Development workflow
 
-Unshell uses a pinned Rust toolchain for application code and a small Node.js toolchain for repository documentation.
-The Nix development shell provides both when a reproducible environment is preferred.
+Use Node.js 22.12 or newer; `.node-version` recommends Node.js 24 LTS. The root `package.json` pins pnpm. All active
+code is TypeScript; no Rust toolchain is required.
 
-## Initial setup
-
-With Nix and direnv:
+## Setup and running
 
 ```bash
-direnv allow
-just deps
+pnpm install --frozen-lockfile
+pnpm dev
 ```
 
-Without Nix, install Rust 1.95, Node.js 22 or newer, pnpm 10, and `just`, then run:
+For the optional Nix shell, run `nix develop` or `direnv allow` first. The shell includes Node.js, pnpm, and just. On
+Linux it selects the Nix Electron binary to avoid unpatched binary-loader issues. A graphical session is required for
+Electron.
 
-```bash
-just deps
-```
+`pnpm dev` builds shared packages, then runs the API and desktop together. Stopping either process stops the pair. API
+source changes restart via tsx; Electron/Vite provides desktop reload. Restart the command after editing shared
+packages.
+
+To run apps separately, first run `pnpm build:packages`, then `pnpm dev:api` and `pnpm dev:desktop` in separate
+terminals. Run `pnpm cli --help` for commands. Set `UNSHELL_API_PORT` for the server and `UNSHELL_API_URL` for clients
+when changing the endpoint; the API remains bound to loopback. No `.env` file is loaded automatically. Export variables
+in your shell.
 
 ## Quality gates
 
-Run the complete local and CI validation suite with:
-
 ```bash
-just verify
+pnpm verify
 ```
 
-The aggregate performs these checks:
+This runs formatting, strict TypeScript checks, ESLint with zero warnings, Markdownlint, Vitest tests, and production
+builds with a development-surface check. `just verify` is equivalent. CI runs on macOS and Linux with Node.js 24.
 
-1. Rustfmt and Prettier formatting checks.
-2. Clippy with warnings denied and Markdownlint.
-3. Tests for every workspace crate and target.
-4. An optimized workspace check, which ensures development-only GPUI surfaces remain absent from release builds.
+API tests use Fastify injection. CLI integration tests start an ephemeral local HTTP server and check success, JSON
+output, exit codes, and connection failure. SDK tests check contract incompatibility and transport errors. Tests do not
+read or write user workspace data. Production build verification requires no graphical session.
 
-The individual `just format-check`, `just lint`, `just test`, and `just release-check` recipes use the same commands as
-continuous integration. Use `just format` to apply Rustfmt and Prettier changes automatically.
+Run `pnpm test:desktop` in a graphical session to exercise the built Electron app against a temporary API, including its
+isolated bridge, production-only UI, and offline handling.
 
-## Toolchain policy
+To create an unpacked desktop application for manual testing:
 
-`rust-toolchain.toml` pins the minimum supported Rust release and installs Rustfmt and Clippy. `Cargo.toml` repeats the
-minimum version so Cargo rejects unsupported compilers with a clear message. When raising the Rust version, update both
-files together.
+```bash
+pnpm package:desktop
+```
 
-The root `package.json` exists only for documentation tooling. Application code remains Rust and GPUI; Node.js is not a
-runtime dependency of Unshell.
+The desktop is not yet a self-contained distribution of the entire environment: run the API separately from this
+checkout. Packaging is unsigned; installer formats, signing, updates, and daemon installation are outside this initial
+migration.
+
+## Tooling and dependencies
+
+`pnpm -r build` orders packages before their dependents. Packages export built ESM and declarations; applications use
+source watchers during development and built output for production. There is no Nx/Turborepo layer. Prefer explicit
+dependencies and keep the shared SDK and contracts platform-independent.
+
+Dependency versions are pinned and the lockfile is committed. The desktop postinstall fetches the pinned Electron
+runtime; pnpm permits the esbuild dependency install script. Review additional install scripts before adding them to
+`onlyBuiltDependencies`.
+
+## Existing data
+
+The former Rust application has been removed; its source, templates, migrations, and tests remain available in Git
+history. The new app does not modify the previous application's data. Workspace migration must preserve the prior
+no-overwrite and crash-recovery behavior before replacing it.

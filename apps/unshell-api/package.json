@@ -1,0 +1,16 @@
+{
+  "name": "unshell-api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsup src/index.ts --format esm --clean",
+    "start": "node dist/index.js",
+    "check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@unshell/contracts": "workspace:*",
+    "fastify": "5.12.8"
+  }
+}

@@ -15,8 +15,12 @@ concurrency:
 
 jobs:
   verify:
-    name: format · lint · test · release
-    runs-on: macos-latest
+    name: verify (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -24,9 +28,7 @@ jobs:
           run_install: false
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version-file: .node-version
           cache: pnpm
-      - uses: actions-rust-lang/setup-rust-toolchain@v1
-      - uses: extractions/setup-just@v3
-      - run: just deps
-      - run: just verify
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm verify

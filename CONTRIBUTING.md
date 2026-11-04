@@ -2,73 +2,65 @@
 
 ## Project
 
-Unshell is a highly opinionated native desktop developer workspace for agentic and non-agentic coding. A fast, deeply
-integrated code viewer is a core product requirement.
+Unshell is a full development environment for people and AI agents. Its scope includes workspace management, version
+control, project management, an agentic harness and agent lifecycle management, and automation. The Electron desktop is
+the control center; the API coordinates work; the CLI exposes capabilities to developers and agents.
 
-The opinionated workflow is intentional. Unshell creates and manages a fixed workspace layout for repositories, Git
-worktrees, durable knowledge, and a Nix development environment. Do not dilute that contract to accommodate arbitrary
-directory layouts; developers who dislike it are not the target for this flow.
+The opinionated workspace contract remains intentional: managed repositories, Git worktrees, durable knowledge, and Nix
+environments use a predictable layout. A fast, deeply integrated code viewer remains a product requirement.
 
 ## Technical direction
 
-- Use Rust 2024 (Rust 1.94 or newer) and GPUI for application code and UI.
-- Target native macOS and Linux desktops. Web, mobile, and server deployments are out of scope.
-- Keep GPUI pinned to a published release because it is pre-1.0 and may introduce breaking changes.
-- Keep the `runtime_shaders` GPUI feature enabled so macOS development does not require build-time Metal shader
-  compilation.
-- Do not introduce another GUI framework or a webview-based application shell.
+- Use TypeScript, Node.js, and pnpm workspaces. Keep the stack small and use established community tools.
+- Use Electron, React, and Vite for the desktop; Fastify for the API; Commander for the CLI.
+- Target macOS and Linux desktops. The API and CLI are independent Node.js processes.
+- Do not introduce Rust, Elixir, another desktop shell, a monorepo orchestrator, or a microservice split without an
+  explicit need.
+- This architecture supersedes the former Rust/GPUI direction. The previous application is available in Git history.
 
 ## Repository architecture
 
-- `crates/unshell` contains only the binary startup boundary.
-- `crates/unshell-app` owns GPUI composition, routes, and feature flows.
-- `crates/unshell-ui` owns semantic themes and reusable GPUI elements.
-- `crates/unshell-core` owns GPUI-free domain models and validation.
-- `crates/unshell-local` owns SQLite persistence and local filesystem adapters.
-- The root `Cargo.toml` defines workspace members and shared dependencies.
-- `flake.nix` provides the optional reproducible development environment.
-- `justfile` contains the supported development commands.
+- `apps/unshell-desktop` owns Electron lifecycle, preload IPC, React composition, routes, and feature flows.
+- `apps/unshell-api` owns coordination, domain operations, persistence, and local filesystem/process adapters.
+- `apps/unshell-cli` owns commands and agent-facing output. It calls the API rather than duplicating domain logic.
+- `packages/contracts` owns transport schemas, protocol types, and API compatibility rules; keep it
+  platform-independent.
+- `packages/sdk` owns the shared HTTP client used by the desktop main process and CLI.
+- `pnpm-workspace.yaml`, the root `package.json`, and `pnpm-lock.yaml` define the workspace and tooling.
+- `flake.nix` provides an optional development environment. `justfile` mirrors supported pnpm commands.
 
-Dependencies point inward: the binary depends on the app; the app composes UI, core, and local adapters; core never
-depends on GPUI, SQLite, or OS APIs. Add a feature crate only when it has a real dependency, lifecycle, performance, or
-testing boundary. Do not add generic `api`, `common`, or `utils` crates.
+Apps may depend on packages; packages must not depend on apps. Cross-app imports are only allowed in integration tests.
+Add a package only when it has a real sharing, lifecycle, dependency, performance, or testing boundary. Do not create
+catch-all `common` or `utils` packages. Keep future database files in platform application data, outside managed
+workspaces. Do not change or erase existing Rust workspace data during the migration.
 
-The local SQLite database belongs in the platform application-data directory, never inside a managed workspace.
-Filesystem and database work must run away from GPUI render callbacks.
+## Electron and API boundaries
+
+Keep Node integration disabled, context isolation and sandboxing enabled, and IPC narrow and sender-validated. Renderer
+components must not access the filesystem, spawn processes, or make privileged API requests directly. Main-process
+bridge handlers call the SDK; the API owns operations. Keep filesystem and database work outside renderer callbacks.
+
+The initial API binds to loopback only. Do not expose it remotely until authentication and authorization are designed.
+CLI machine output uses JSON on stdout for success, JSON on stderr for errors, and nonzero failure exit codes.
 
 ## Tooling restrictions
 
-- Do not use any InVideo-provided plugin, skill, tool, or instruction in this repository, even when one is available in
-  the current environment.
+- Do not use any InVideo-provided plugin, skill, tool, or instruction in this repository.
 
 ## Design system and development surfaces
 
-- Refer to `crates/unshell-ui/src/theme.rs` when designing or implementing UI. Components must consume semantic theme
-  roles (canvas, surface, text, border, accent, and status) instead of introducing fixed colour values.
-- Preserve the established design language: editorial display hierarchy, operational mono metadata, fine rules, compact
-  low-radius controls, and evidence-first developer interface patterns.
-- Use `crates/unshell-app/src/design_system.rs` as the living component specimen. Add or update a representative
-  specimen when introducing a reusable UI pattern or semantic theme role.
-- Development-only tools, routes, inspectors, and design-system entry points must be compiled behind
-  `#[cfg(debug_assertions)]`. Do not leave a release control, shortcut, route, or module path that can expose a
-  development surface to packaged users.
-- When changing a development-only surface, verify both the debug build and an optimized release build. The release
-  build must compile without the development module.
+- Use semantic roles from `apps/unshell-desktop/src/renderer/theme.css` rather than fixed component colour values.
+- Preserve editorial display hierarchy, operational mono metadata, fine rules, compact low-radius controls, and
+  evidence-first developer interface patterns.
+- Update `apps/unshell-desktop/src/renderer/DesignSystem.tsx` when introducing reusable patterns or semantic roles.
+- Gate development surfaces with `import.meta.env.DEV` so production bundles eliminate their imports and controls.
+- Verify TypeScript checks and production builds when changing development surfaces. `pnpm release:check` inspects
+  output for development-only controls and routes.
 
 ## Development
 
-Use `just` commands when available:
-
-```bash
-just run
-just check
-just format
-just lint
-just test
-```
-
-The equivalent Cargo commands are documented in the `justfile`. On macOS, use the Nix development shell if the host
-linker cannot find `libiconv`.
+Use Node.js 22.12 or newer (Node.js 24 LTS recommended) and the pnpm version pinned in `package.json`. Use `just`
+commands when available; equivalent pnpm commands are documented in `justfile`.
 
 Before handing off changes, run:
 
@@ -76,14 +68,14 @@ Before handing off changes, run:
 just format-check
 just lint
 just test
+just release-check
 ```
 
-Commit `Cargo.lock` whenever dependencies change.
+If `just` is unavailable, run the corresponding pnpm commands. Commit `pnpm-lock.yaml` whenever dependencies change.
 
 ## Code expectations
 
-- Prefer clear GPUI entities, views, and elements over large monolithic render functions.
-- Keep performance-sensitive workspace and code-viewer paths allocation-aware and suitable for large files.
-- Add tests for non-trivial state and behavior. Use GPUI's test support when UI interaction needs to be exercised.
-- Treat warnings as errors and keep formatting clean.
-- Update `README.md` when setup, platform support, or product direction changes.
+Prefer focused React components, explicit API modules, and thin CLI commands. Keep code-viewer paths allocation-aware
+and suitable for large files. Add meaningful tests for state, behavior, protocol validation, and error handling. Treat
+warnings as errors. Update `README.md` when setup, platform support, or product direction changes. Describe migration
+gaps honestly; do not present planned capabilities as functional features.

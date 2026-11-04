@@ -1,54 +1,50 @@
-# Unshell development commands
+# Unshell monorepo development commands
 
 default:
     @just --list
 
-# Initialize the optional direnv environment
 init:
     direnv allow
 
-# Install documentation tooling
 deps:
     pnpm install --frozen-lockfile
 
-# Run the desktop application
+# Run the API and desktop together
 run:
-    cargo run -p unshell
+    pnpm dev
 
-# Type-check the project
+api:
+    pnpm dev:api
+
+cli *args:
+    pnpm cli {{args}}
+
 check:
-    cargo check --workspace
+    pnpm check
 
-# Build a debug binary
 build:
-    cargo build --workspace
+    pnpm build
 
-# Build an optimized binary
 build-release:
-    cargo build --workspace --release
+    pnpm build
 
-# Format Rust source and Markdown documentation
+package-desktop:
+    pnpm package:desktop
+
 format:
-    cargo fmt --all
-    pnpm docs:format
+    pnpm format
 
-# Verify Rust source and Markdown formatting
 format-check:
-    cargo fmt --all -- --check
-    pnpm docs:format:check
+    pnpm format:check
 
-# Run Clippy and lint Markdown documentation
 lint:
-    cargo clippy --workspace --all-targets --all-features -- -D warnings
-    pnpm docs:lint
+    pnpm lint
 
-# Run tests
 test:
-    cargo test --workspace --all-targets
+    pnpm test
 
-# Build the release configuration to catch debug-only surface leaks
 release-check:
-    cargo check --workspace --all-targets --all-features --release
+    pnpm release:check
 
-# Run every repository quality gate
-verify: format-check lint test release-check
+verify:
+    pnpm verify

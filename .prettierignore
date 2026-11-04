@@ -1,2 +1,10 @@
 node_modules/
+pnpm-lock.yaml
 target/
+dist/
+out/
+release/
+coverage/
+.direnv/
+.pnpm-store/
+.delta/

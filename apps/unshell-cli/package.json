@@ -1,0 +1,20 @@
+{
+  "name": "unshell-cli",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "unshell": "dist/index.js"
+  },
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsup src/index.ts --format esm --clean",
+    "start": "node dist/index.js",
+    "check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@unshell/contracts": "workspace:*",
+    "@unshell/sdk": "workspace:*",
+    "commander": "15.0.0"
+  }
+}

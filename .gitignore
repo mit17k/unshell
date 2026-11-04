@@ -1,24 +1,17 @@
-# Rust build output
-/target/
-/node_modules/
-
-# Environment
+node_modules/
+dist/
+out/
+release/
+coverage/
+target/
 .env
 .env.*
 !.env.example
 .direnv/
-
-# Package manager cache
 .pnpm-store/
-
-# Logs
 *.log
-
-# Operating systems
 .DS_Store
 Thumbs.db
-
-# Editors
 .idea/
 .vscode/
 *.swp

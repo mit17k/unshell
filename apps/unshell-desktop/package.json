@@ -1,0 +1,57 @@
+{
+  "name": "unshell-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Unshell development control center",
+  "author": "Unshell contributors",
+  "main": "out/main/index.js",
+  "scripts": {
+    "dev": "electron-vite dev --watch",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview",
+    "check": "tsc --noEmit",
+    "package": "pnpm build && electron-builder --dir",
+    "postinstall": "install-electron"
+  },
+  "dependencies": {
+    "@unshell/contracts": "workspace:*",
+    "@unshell/sdk": "workspace:*",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.2.1",
+    "electron": "45.2.2",
+    "electron-builder": "26.18.0",
+    "electron-vite": "6.0.0",
+    "vite": "8.3.5"
+  },
+  "build": {
+    "appId": "dev.unshell.desktop",
+    "productName": "Unshell",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "out/**/*",
+      "package.json"
+    ],
+    "asar": true,
+    "npmRebuild": false,
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "target": [
+        "dir"
+      ]
+    },
+    "linux": {
+      "category": "Development",
+      "target": [
+        "dir"
+      ]
+    }
+  }
+}

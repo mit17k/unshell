@@ -1,5 +1,13 @@
 {
   "config": ".markdownlint.json",
   "globs": ["**/*.md"],
-  "ignores": [".direnv/**", "node_modules/**", "target/**"]
+  "ignores": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/out/**",
+    "**/release/**",
+    ".direnv/**",
+    ".pnpm-store/**",
+    "target/**",
+  ],
 }
