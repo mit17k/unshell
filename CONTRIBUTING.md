@@ -54,6 +54,8 @@ CLI machine output uses JSON on stdout for success, JSON on stderr for errors, a
   specimen in the dev Design system view.
 - Code display goes through `renderer/code/` (Shiki grammars in Tokyo Night, with an LSP semantic-token layer via
   `SemanticTokenProvider`).
+- Terminals run in the main process (`src/main/terminal.ts`, node-pty) and reach the renderer only through the preload
+  `unshell.terminal` bridge. Keep PTY output batched and acknowledged; never route it through React state.
 - Dev-only tooling lives in `apps/unshell-desktop/src/renderer/dev/` behind the Dev button. Add a view by registering it
   in `dev/views.ts`; never import from `dev/` outside the `import.meta.env.DEV` gate in `App.tsx`.
 - Preserve editorial display hierarchy, operational mono metadata, fine rules, compact low-radius controls, and

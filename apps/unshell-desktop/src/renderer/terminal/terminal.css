@@ -1,0 +1,14 @@
+.terminal-pane {
+  height: 100%;
+  min-height: 0;
+  padding: var(--space-3) var(--space-2) var(--space-3) var(--space-4);
+  background: #1a1b26;
+}
+
+.terminal-pane[hidden] {
+  display: none;
+}
+
+.terminal-pane .xterm-viewport {
+  scrollbar-color: var(--color-border-strong) transparent;
+}

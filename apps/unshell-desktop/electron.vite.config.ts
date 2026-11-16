@@ -3,7 +3,12 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   main: {
-    build: { externalizeDeps: false },
+    build: {
+      externalizeDeps: false,
+      // node-pty is a native addon; it must be loaded from node_modules at
+      // runtime (unpacked from the asar in packaged builds).
+      rollupOptions: { external: ["node-pty"] },
+    },
   },
   preload: {
     build: {
