@@ -21,6 +21,7 @@ try {
   page.on("pageerror", (error) => errors.push(error.message));
   await page.waitForLoadState("domcontentloaded");
   assert.equal(await page.title(), "Unshell");
+  assert.equal(await page.getByRole("button", { name: "Dev" }).count(), 0);
   assert.equal(
     await page.evaluate(() => typeof globalThis.require),
     "undefined",
