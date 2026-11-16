@@ -15,12 +15,12 @@ the same capabilities. Unshell retains its opinionated workspace layout and the 
 | `unshell-cli`     | Node.js, TypeScript, Commander    | Developer and agent interface to the API            |
 
 pnpm workspaces manage the monorepo without an additional build orchestrator. All three applications share one language.
-Runtime schemas live in `@unshell/contracts`; desktop and CLI use `@unshell/sdk` for validated HTTP responses.
+Runtime schemas live in `@unshell/contracts`; the CLI uses `@unshell/sdk` for validated HTTP responses.
 
 ## Migration status
 
-This first migration establishes runnable apps, typed API communication, a desktop connection dashboard, agent-friendly
-CLI output, production builds, packaging configuration, and shared quality gates.
+This first migration establishes runnable apps, typed API communication, an empty desktop window, agent-friendly CLI
+output, production builds, packaging configuration, and shared quality gates.
 
 **Workspace creation, the workspace index/switcher, SQLite persistence and recovery, and the GPUI component catalog have
 not yet been ported.** The former Rust application has been removed from the repository; its implementation remains
@@ -80,14 +80,14 @@ separately with `UNSHELL_API_PORT`. Only loopback HTTP origins are supported in 
 | `just release-check`     | `pnpm release:check`             | Build and verify development surfaces are absent       |
 | `just verify`            | `pnpm verify`                    | Run all quality gates                                  |
 
-`pnpm test:desktop` also launches Electron for an end-to-end smoke test of the API connection, sandboxed bridge,
-production UI, and disconnection handling. It requires a graphical session.
+`pnpm test:desktop` also launches Electron for an end-to-end smoke test that the empty, sandboxed window opens. It
+requires a graphical session.
 
 For production builds, run the API with `pnpm --filter unshell-api start`, then preview the desktop with
-`pnpm --filter unshell-desktop preview`. Packaged desktop output is under `apps/unshell-desktop/release`. The desktop
-connects to an independently running API; it does not start or bundle an API daemon yet. Install dependencies with pnpm
-when running the built API/CLI from this checkout. Standalone CLI distribution, installers, signing, auto-updates, and
-remote API deployment are future work.
+`pnpm --filter unshell-desktop preview`. Packaged desktop output is under `apps/unshell-desktop/release`. The desktop is
+an empty window for now and does not talk to the API yet. Install dependencies with pnpm when running the built API/CLI
+from this checkout. Standalone CLI distribution, installers, signing, auto-updates, and remote API deployment are future
+work.
 
 On Linux, Electron requires a graphical desktop and its system libraries. For NixOS, the included Nix shell provides a
 Nix-compatible Electron runtime via `ELECTRON_OVERRIDE_DIST_PATH`. On macOS, the standard Electron download is used.

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Unshell development control center",
+  "description": "Unshell desktop app",
   "author": "Unshell contributors",
   "main": "out/main/index.js",
   "scripts": {
@@ -15,8 +15,6 @@
     "postinstall": "install-electron"
   },
   "dependencies": {
-    "@unshell/contracts": "workspace:*",
-    "@unshell/sdk": "workspace:*",
     "react": "19.3.1",
     "react-dom": "19.3.1"
   },

@@ -1,8 +1,9 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { App } from "./App.js";
-import "./theme.css";
-import "./styles.css";
+
+function App() {
+  return null;
+}
 
 const root = document.getElementById("root");
 if (!root) throw new Error("Missing application root");

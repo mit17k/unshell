@@ -74,12 +74,6 @@ importers:
 
   apps/unshell-desktop:
     dependencies:
-      '@unshell/contracts':
-        specifier: workspace:*
-        version: link:../../packages/contracts
-      '@unshell/sdk':
-        specifier: workspace:*
-        version: link:../../packages/sdk
       react:
         specifier: 19.3.1
         version: 19.3.1

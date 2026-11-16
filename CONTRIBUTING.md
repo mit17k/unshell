@@ -49,10 +49,8 @@ CLI machine output uses JSON on stdout for success, JSON on stderr for errors, a
 
 ## Design system and development surfaces
 
-- Use semantic roles from `apps/unshell-desktop/src/renderer/theme.css` rather than fixed component colour values.
 - Preserve editorial display hierarchy, operational mono metadata, fine rules, compact low-radius controls, and
   evidence-first developer interface patterns.
-- Update `apps/unshell-desktop/src/renderer/DesignSystem.tsx` when introducing reusable patterns or semantic roles.
 - Gate development surfaces with `import.meta.env.DEV` so production bundles eliminate their imports and controls.
 - Verify TypeScript checks and production builds when changing development surfaces. `pnpm release:check` inspects
   output for development-only controls and routes.
