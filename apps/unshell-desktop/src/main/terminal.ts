@@ -12,17 +12,19 @@ import type * as NodePty from "node-pty";
 import { TerminalChannel } from "../shared/terminal.js";
 import { PtyHost } from "./pty-host.js";
 
-// node-pty is a native CommonJS module kept outside the bundle.
-const require = createRequire(import.meta.url);
+// node-pty is a native CommonJS module kept outside the bundle. The name must
+// not be `require`: electron-vite injects its own top-level `require` shim into
+// the ESM main bundle, and a second declaration is a SyntaxError at load.
+const nativeRequire = createRequire(import.meta.url);
 let nodePty: typeof NodePty | undefined;
 
 function loadNodePty() {
   if (nodePty) return nodePty;
-  nodePty = require("node-pty") as typeof NodePty;
+  nodePty = nativeRequire("node-pty") as typeof NodePty;
   // Some installs drop the execute bit from the macOS spawn helper, which makes
   // every spawn fail with "posix_spawnp failed".
   if (process.platform === "darwin") {
-    const base = dirname(require.resolve("node-pty/package.json"));
+    const base = dirname(nativeRequire.resolve("node-pty/package.json"));
     const helper = join(
       base,
       "prebuilds",

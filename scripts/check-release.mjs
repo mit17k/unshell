@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 
@@ -18,6 +19,15 @@ async function inspect(directory) {
   }
 }
 await inspect("apps/unshell-desktop/out");
+// Bundling can produce code that only fails when Electron loads it (for example
+// a duplicate top-level declaration), so parse the main bundle here.
+execFileSync(
+  process.execPath,
+  ["--check", "apps/unshell-desktop/out/main/index.js"],
+  {
+    stdio: "inherit",
+  },
+);
 console.log(
   "Release output excludes development routes and renderer URL overrides.",
 );
