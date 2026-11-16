@@ -49,7 +49,9 @@ CLI machine output uses JSON on stdout for success, JSON on stderr for errors, a
 
 ## Design system and development surfaces
 
-- Use the tokens in `apps/unshell-desktop/src/renderer/tokens.css` rather than fixed colour or spacing values.
+- Use the Tokyo Night tokens in `apps/unshell-desktop/src/renderer/tokens.css` rather than fixed colour, type, spacing,
+  radius, shadow or motion values. Build screens from `renderer/ui/` components and add new reusable ones there, with a
+  specimen in the dev Design system view.
 - Dev-only tooling lives in `apps/unshell-desktop/src/renderer/dev/` behind the Dev button. Add a view by registering it
   in `dev/views.ts`; never import from `dev/` outside the `import.meta.env.DEV` gate in `App.tsx`.
 - Preserve editorial display hierarchy, operational mono metadata, fine rules, compact low-radius controls, and

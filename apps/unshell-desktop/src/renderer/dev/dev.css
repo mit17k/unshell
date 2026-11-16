@@ -50,7 +50,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
-  max-width: 880px;
+  max-width: 1080px;
 }
 
 .dev-stack h1,
@@ -63,44 +63,162 @@
   color: var(--color-text-muted);
 }
 
-.dev-swatches {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: var(--space-3);
+/* Design system showcase ------------------------------------------------ */
+.ds {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+  max-width: 1080px;
+  padding-bottom: var(--space-16);
 }
 
-.dev-swatch {
-  margin: 0;
-}
-
-.dev-swatch div {
-  height: 56px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-}
-
-.dev-swatch figcaption,
-.dev-space code {
-  margin-top: var(--space-1);
-  font: 11px var(--font-mono);
+.ds code {
+  font: var(--text-small) var(--font-mono);
   color: var(--color-text-muted);
 }
 
-.dev-space {
+.ds-hero {
   display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  margin-bottom: var(--space-2);
+  flex-direction: column;
+  gap: var(--space-4);
 }
 
-.dev-space code {
-  width: 80px;
+.ds-lede {
+  max-width: 60ch;
+  margin: 0;
+  font-size: var(--text-body-lg);
+  color: var(--color-text-secondary);
+}
+
+.ds-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.ds-specimen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.ds-specimen-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.ds-specimen-body p {
   margin: 0;
 }
 
-.dev-space span {
-  height: 12px;
+.ds-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.ds-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-8);
+  align-items: start;
+}
+
+.ds-muted {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.ds-swatches {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: var(--space-3);
+}
+
+.ds-swatch,
+.ds-tile-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.ds-swatch div {
+  height: 48px;
+  border: var(--hairline) solid var(--color-border-subtle);
+}
+
+.ds-swatch figcaption,
+.ds-tile-wrap figcaption {
+  font: var(--text-label) var(--font-mono);
+  color: var(--color-text-muted);
+}
+
+.ds-type {
+  border-top: var(--hairline) solid var(--color-border-subtle);
+}
+
+.ds-type-row {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  align-items: baseline;
+  gap: var(--space-6);
+  padding: var(--space-4) 0;
+  border-bottom: var(--hairline) solid var(--color-border-subtle);
+  color: var(--color-text-strong);
+}
+
+.ds-space,
+.ds-motion {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.ds-space span {
+  height: 8px;
   background: var(--color-accent);
+}
+
+.ds-tile {
+  width: 96px;
+  height: 64px;
+  border: var(--hairline) solid var(--color-border-strong);
+  background: var(--color-surface);
+}
+
+.ds-tile--raised {
+  border-color: var(--color-border);
+  background: var(--color-surface-raised);
+}
+
+.ds-motion-track {
+  position: relative;
+  width: 320px;
+  height: 24px;
+  border-bottom: var(--hairline) solid var(--color-border-subtle);
+}
+
+.ds-motion-track span {
+  position: absolute;
+  top: 8px;
+  left: 0;
+  width: 40px;
+  height: 8px;
+  background: var(--color-info);
+}
+
+.ds-bleed {
+  border: var(--hairline) solid var(--color-border-subtle);
+}
+
+.ds-mark {
+  font-family: var(--font-display);
+  font-size: var(--text-title);
+  color: var(--color-accent);
 }
 
 /* The toggle sits above the dev area so it can also close it. */
