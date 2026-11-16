@@ -239,3 +239,23 @@
 .dev-toggle[aria-pressed="true"] {
   border-color: var(--color-warning);
 }
+
+/* Code viewer screen ----------------------------------------------------- */
+.cv-screen {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: var(--space-6);
+  height: calc(100vh - 2 * var(--space-6));
+}
+
+.cv-languages {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: auto;
+}
+
+.cv-languages .u-eyebrow {
+  margin: 0 0 var(--space-3);
+  padding: 0 var(--space-2);
+}

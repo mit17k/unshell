@@ -9,5 +9,6 @@
     ".direnv/**",
     ".pnpm-store/**",
     "target/**",
+    "apps/unshell-desktop/src/renderer/dev/samples/**",
   ],
 }

@@ -14,6 +14,7 @@ export default tseslint.config(
       ".direnv/**",
       ".pnpm-store/**",
       ".delta/**",
+      "apps/unshell-desktop/src/renderer/dev/samples/**",
     ],
   },
   js.configs.recommended,

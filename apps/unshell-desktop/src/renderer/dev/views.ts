@@ -1,6 +1,6 @@
 import type { ComponentType } from "react";
+import { CodeViewerView } from "./views/CodeViewerView.js";
 import { DesignSystemView } from "./views/DesignSystemView.js";
-import { ScreensView } from "./views/ScreensView.js";
 
 export interface DevView {
   id: string;
@@ -11,5 +11,5 @@ export interface DevView {
 // Register new dev views here. Order is the sidebar order.
 export const devViews: DevView[] = [
   { id: "design-system", label: "Design system", component: DesignSystemView },
-  { id: "screens", label: "Screens", component: ScreensView },
+  { id: "code-viewer", label: "Code viewer", component: CodeViewerView },
 ];

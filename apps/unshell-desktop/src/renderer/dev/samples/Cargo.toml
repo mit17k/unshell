@@ -1,0 +1,24 @@
+[package]
+name = "unshell-core"
+version = "0.1.0"
+edition = "2021"
+description = "Workspace engine for Unshell"
+license = "MIT"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+tokio = { version = "1.40", features = ["rt-multi-thread", "macros", "fs"] }
+rusqlite = { version = "0.32", optional = true }
+
+[features]
+default = ["sqlite"]
+sqlite = ["dep:rusqlite"]
+
+[profile.release]
+lto = true
+codegen-units = 1
+opt-level = 3
+
+[[bin]]
+name = "unshell"
+path = "src/main.rs"
