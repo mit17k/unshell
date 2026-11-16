@@ -5,7 +5,7 @@ import { Unicode11Addon } from "@xterm/addon-unicode11";
 import { WebLinksAddon } from "@xterm/addon-web-links";
 import { WebglAddon } from "@xterm/addon-webgl";
 import type { TerminalInfo } from "../../shared/terminal.js";
-import { terminalFont, tokyoNightTerminal } from "./theme.js";
+import { symbolsFont, terminalFont, tokyoNightTerminal } from "./theme.js";
 import "@xterm/xterm/css/xterm.css";
 import "./terminal.css";
 
@@ -48,6 +48,10 @@ export function TerminalPane({ active = true, onStatus }: TerminalPaneProps) {
       scrollback: 10_000,
       macOptionIsMeta: true,
       allowProposedApi: true,
+      // Box drawing and powerline separators are drawn by xterm to fill the
+      // cell exactly; wide icons are scaled down instead of overlapping.
+      customGlyphs: true,
+      rescaleOverlappingGlyphs: true,
       theme: tokyoNightTerminal,
     });
     termRef.current = term;
@@ -81,6 +85,18 @@ export function TerminalPane({ active = true, onStatus }: TerminalPaneProps) {
     const disposers: Array<() => void> = [];
     let id: number | undefined;
     let closed = false;
+
+    // The WebGL renderer caches glyphs in a texture atlas. If a prompt icon is
+    // drawn before the symbols font loads, the atlas keeps the tofu box, so
+    // load the font explicitly and rebuild the atlas once it is ready.
+    void document.fonts
+      .load(`${term.options.fontSize ?? 13}px "${symbolsFont}"`, "\ue0b0\uf113")
+      .then(() => {
+        if (closed) return;
+        term.clearTextureAtlas();
+        term.refresh(0, term.rows - 1);
+      })
+      .catch(() => {});
 
     const resized = term.onResize(({ cols, rows }) => {
       status.cols = cols;

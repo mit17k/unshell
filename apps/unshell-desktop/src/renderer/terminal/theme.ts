@@ -26,5 +26,9 @@ export const tokyoNightTerminal: ITheme = {
   brightWhite: "#c0caf5",
 };
 
-export const terminalFont =
-  '"SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, Consolas, monospace';
+/** Bundled fallback for Nerd Font / Powerline private-use glyphs. */
+export const symbolsFont = "Symbols Nerd Font Mono";
+
+// Text uses the first available monospace font; prompt icons and powerline
+// glyphs fall through to the bundled symbols font, glyph by glyph.
+export const terminalFont = `"SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, Consolas, "${symbolsFont}", monospace`;
