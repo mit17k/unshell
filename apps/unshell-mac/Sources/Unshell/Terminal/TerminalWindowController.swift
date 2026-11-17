@@ -12,6 +12,8 @@ final class TerminalWindowController: NSWindowController, GhosttyRuntimeDelegate
     private let sidebar = TerminalSidebar()
     private let content = NSView()
     private let statusLabel = NSTextField(labelWithString: "")
+    /// Shown over the selected terminal once its process has exited.
+    private let exitBanner = NSTextField(labelWithString: "")
     private var statusTimer: Timer?
     private let usage = ProcessUsage()
 
@@ -67,6 +69,16 @@ final class TerminalWindowController: NSWindowController, GhosttyRuntimeDelegate
         root.addSubview(content)
         root.addSubview(statusLabel)
 
+        exitBanner.font = Theme.Font.monoLabel
+        exitBanner.textColor = Theme.Color.fgStrong
+        exitBanner.drawsBackground = true
+        exitBanner.backgroundColor = Theme.Color.surfaceRaised
+        exitBanner.alignment = .center
+        exitBanner.isHidden = true
+        exitBanner.translatesAutoresizingMaskIntoConstraints = false
+        // Sibling above the surfaces, not a subview of a Metal-hosting view.
+        root.addSubview(exitBanner, positioned: .above, relativeTo: content)
+
         NSLayoutConstraint.activate([
             sidebar.leadingAnchor.constraint(equalTo: root.leadingAnchor),
             sidebar.topAnchor.constraint(equalTo: root.topAnchor, constant: 28),
@@ -86,6 +98,11 @@ final class TerminalWindowController: NSWindowController, GhosttyRuntimeDelegate
             statusLabel.leadingAnchor.constraint(equalTo: root.leadingAnchor, constant: 12),
             statusLabel.widthAnchor.constraint(equalToConstant: 200),
             statusLabel.bottomAnchor.constraint(equalTo: root.bottomAnchor, constant: -8),
+
+            exitBanner.leadingAnchor.constraint(equalTo: content.leadingAnchor),
+            exitBanner.trailingAnchor.constraint(equalTo: content.trailingAnchor),
+            exitBanner.bottomAnchor.constraint(equalTo: content.bottomAnchor),
+            exitBanner.heightAnchor.constraint(equalToConstant: 28),
         ])
     }
 
@@ -93,15 +110,7 @@ final class TerminalWindowController: NSWindowController, GhosttyRuntimeDelegate
 
     @discardableResult
     func newTerminal(workingDirectory: String? = nil, command: String? = nil, select shouldSelect: Bool = true) -> TerminalSurfaceView {
-        let view = TerminalSurfaceView(runtime: runtime, workingDirectory: workingDirectory, command: command)
-        view.translatesAutoresizingMaskIntoConstraints = false
-        content.addSubview(view)
-        NSLayoutConstraint.activate([
-            view.leadingAnchor.constraint(equalTo: content.leadingAnchor),
-            view.trailingAnchor.constraint(equalTo: content.trailingAnchor),
-            view.topAnchor.constraint(equalTo: content.topAnchor),
-            view.bottomAnchor.constraint(equalTo: content.bottomAnchor),
-        ])
+        let view = makeTerminalView(workingDirectory: workingDirectory, command: command)
         terminals.append(view)
         sidebar.terminals = terminals
         if shouldSelect {
@@ -110,6 +119,38 @@ final class TerminalWindowController: NSWindowController, GhosttyRuntimeDelegate
             view.setVisibleToUser(false)
         }
         return view
+    }
+
+    private func makeTerminalView(workingDirectory: String?, command: String?) -> TerminalSurfaceView {
+        let view = TerminalSurfaceView(runtime: runtime, workingDirectory: workingDirectory, command: command)
+        view.onRestartRequested = { [weak self] view in self?.restart(view) }
+        view.translatesAutoresizingMaskIntoConstraints = false
+        content.addSubview(view)
+        NSLayoutConstraint.activate([
+            view.leadingAnchor.constraint(equalTo: content.leadingAnchor),
+            view.trailingAnchor.constraint(equalTo: content.trailingAnchor),
+            view.topAnchor.constraint(equalTo: content.topAnchor),
+            view.bottomAnchor.constraint(equalTo: content.bottomAnchor),
+        ])
+        return view
+    }
+
+    /// Replaces an exited terminal with a fresh one in the same row, same
+    /// working directory and command.
+    private func restart(_ old: TerminalSurfaceView) {
+        guard let index = terminals.firstIndex(where: { $0 === old }) else { return }
+        GhosttyRuntime.log.info("restart terminal row=\(index + 1, privacy: .public)")
+        let view = makeTerminalView(workingDirectory: old.workingDirectory, command: old.command)
+        terminals[index] = view
+        old.removeFromSuperview()
+        old.destroy()
+        sidebar.terminals = terminals
+        if selectedIndex == index {
+            selectedIndex = nil
+            select(index)
+        } else {
+            view.setVisibleToUser(false)
+        }
     }
 
     func openStressTerminals(count: Int, command: String?) {
@@ -132,6 +173,18 @@ final class TerminalWindowController: NSWindowController, GhosttyRuntimeDelegate
         window?.makeFirstResponder(view)
         window?.title = view.title
         sidebar.select(index)
+        updateExitBanner()
+    }
+
+    private func updateExitBanner() {
+        guard let index = selectedIndex, terminals.indices.contains(index),
+              let status = terminals[index].exitStatus
+        else {
+            exitBanner.isHidden = true
+            return
+        }
+        exitBanner.stringValue = "PROCESS EXITED (CODE \(status.code)) · RETURN OR ⌘R TO RESTART"
+        exitBanner.isHidden = false
     }
 
     private func close(_ view: TerminalSurfaceView) {
@@ -163,6 +216,15 @@ final class TerminalWindowController: NSWindowController, GhosttyRuntimeDelegate
         ghostty_surface_request_close(surface)
     }
 
+    @objc func restartTerminalAction(_ sender: Any?) {
+        // Only exited terminals restart; ⌘R must never kill a live shell.
+        guard let index = selectedIndex, terminals.indices.contains(index), terminals[index].hasExited else {
+            NSSound.beep()
+            return
+        }
+        restart(terminals[index])
+    }
+
     @objc func nextTerminalAction(_ sender: Any?) { step(1) }
     @objc func previousTerminalAction(_ sender: Any?) { step(-1) }
 
@@ -178,8 +240,17 @@ final class TerminalWindowController: NSWindowController, GhosttyRuntimeDelegate
         newTerminal(workingDirectory: surface?.workingDirectory)
     }
 
-    func ghosttyCloseTerminal(_ surface: TerminalSurfaceView, processAlive: Bool) {
+    func ghosttyCloseTerminal(_ surface: TerminalSurfaceView, reason: String) {
+        let row = terminals.firstIndex(where: { $0 === surface }).map { $0 + 1 } ?? 0
+        GhosttyRuntime.log.info("close terminal row=\(row, privacy: .public) reason=\(reason, privacy: .public)")
         close(surface)
+    }
+
+    func ghosttyChildExited(_ surface: TerminalSurfaceView, exitCode: UInt32, runtimeMs: UInt64) {
+        surface.markExited(code: exitCode, runtimeMs: runtimeMs)
+        guard let index = terminals.firstIndex(where: { $0 === surface }) else { return }
+        sidebar.reloadRows(IndexSet(integer: index))
+        if index == selectedIndex { updateExitBanner() }
     }
 
     func ghosttyGotoTerminal(_ target: ghostty_action_goto_tab_e) {

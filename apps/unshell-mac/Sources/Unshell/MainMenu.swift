@@ -19,6 +19,7 @@ enum MainMenu {
         let shellMenu = NSMenu(title: "Shell")
         shellMenu.addItem(withTitle: "New Terminal", action: #selector(TerminalWindowController.newTerminalAction(_:)), keyEquivalent: "t")
         shellMenu.addItem(withTitle: "Close Terminal", action: #selector(TerminalWindowController.closeTerminalAction(_:)), keyEquivalent: "w")
+        shellMenu.addItem(withTitle: "Restart Terminal", action: #selector(TerminalWindowController.restartTerminalAction(_:)), keyEquivalent: "r")
         shellMenu.addItem(.separator())
         shellMenu.addItem(withTitle: "Next Terminal", action: #selector(TerminalWindowController.nextTerminalAction(_:)), keyEquivalent: "}")
         shellMenu.addItem(withTitle: "Previous Terminal", action: #selector(TerminalWindowController.previousTerminalAction(_:)), keyEquivalent: "{")

@@ -76,7 +76,14 @@ final class TerminalSidebar: NSView, NSTableViewDataSource, NSTableViewDelegate 
             ])
             return cell
         }()
-        cell.textField?.stringValue = String(format: "%02d  %@", row + 1, terminals[row].title)
+        let terminal = terminals[row]
+        if let status = terminal.exitStatus {
+            cell.textField?.stringValue = String(format: "%02d  exited (%u)  %@", row + 1, status.code, terminal.title)
+            cell.textField?.textColor = Theme.Color.fgFaint
+        } else {
+            cell.textField?.stringValue = String(format: "%02d  %@", row + 1, terminal.title)
+            cell.textField?.textColor = Theme.Color.fg
+        }
         return cell
     }
 

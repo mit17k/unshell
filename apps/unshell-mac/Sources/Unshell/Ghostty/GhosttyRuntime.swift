@@ -5,7 +5,8 @@ import os
 /// Events libghostty raises that the window layer has to act on.
 protocol GhosttyRuntimeDelegate: AnyObject {
     func ghosttyNewTerminal(from surface: TerminalSurfaceView?)
-    func ghosttyCloseTerminal(_ surface: TerminalSurfaceView, processAlive: Bool)
+    func ghosttyCloseTerminal(_ surface: TerminalSurfaceView, reason: String)
+    func ghosttyChildExited(_ surface: TerminalSurfaceView, exitCode: UInt32, runtimeMs: UInt64)
     func ghosttyGotoTerminal(_ target: ghostty_action_goto_tab_e)
     func ghosttyTitleChanged(_ surface: TerminalSurfaceView, title: String)
     func ghosttyWorkingDirectoryChanged(_ surface: TerminalSurfaceView, path: String)
@@ -62,7 +63,7 @@ final class GhosttyRuntime {
             close_surface_cb: { userdata, processAlive in
                 guard let view = TerminalSurfaceView.from(userdata: userdata) else { return }
                 DispatchQueue.main.async {
-                    view.runtime?.delegate?.ghosttyCloseTerminal(view, processAlive: processAlive)
+                    view.runtime?.delegate?.ghosttyCloseTerminal(view, reason: "close_surface_cb processAlive=\(processAlive)")
                 }
             }
         )
@@ -152,7 +153,17 @@ final class GhosttyRuntime {
         case GHOSTTY_ACTION_CLOSE_TAB:
             guard let view else { return false }
             // Never free a surface from inside libghostty's own tick.
-            DispatchQueue.main.async { runtime.delegate?.ghosttyCloseTerminal(view, processAlive: true) }
+            DispatchQueue.main.async { runtime.delegate?.ghosttyCloseTerminal(view, reason: "action close_tab") }
+            return true
+
+        case GHOSTTY_ACTION_SHOW_CHILD_EXITED:
+            // Surfaces are created with wait_after_command, so libghostty keeps
+            // them after the child exits. Returning true suppresses its
+            // in-terminal "Process exited" text; the window shows its own state.
+            guard let view else { return false }
+            let info = action.action.child_exited
+            log.info("child exited code=\(info.exit_code, privacy: .public) runtime=\(info.timetime_ms, privacy: .public)ms surface=\(view.id.uuidString, privacy: .public)")
+            runtime.delegate?.ghosttyChildExited(view, exitCode: info.exit_code, runtimeMs: info.timetime_ms)
             return true
 
         case GHOSTTY_ACTION_GOTO_TAB:

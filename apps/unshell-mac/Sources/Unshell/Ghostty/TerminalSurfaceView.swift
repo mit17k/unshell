@@ -1,4 +1,5 @@
 import AppKit
+import Carbon.HIToolbox
 import GhosttyKit
 
 /// One terminal. libghostty attaches a CAMetalLayer to this view and renders into
@@ -11,6 +12,22 @@ final class TerminalSurfaceView: NSView, NSTextInputClient {
 
     var title: String = "shell"
     var workingDirectory: String?
+    /// Explicit command, or nil for the user's login shell. Kept for restarts.
+    let command: String?
+
+    /// Set once the child process exits. The surface stays alive (libghostty is
+    /// told to wait after the command), so the scrollback remains readable.
+    private(set) var exitStatus: ExitStatus?
+    var hasExited: Bool { exitStatus != nil }
+
+    /// Return on an exited terminal asks the window to restart it.
+    var onRestartRequested: ((TerminalSurfaceView) -> Void)?
+
+    struct ExitStatus {
+        /// libghostty cannot report a reliable code through macOS login(1).
+        let code: UInt32
+        let runtimeMs: UInt64
+    }
 
     /// Text produced by `interpretKeyEvents` during a keyDown (IME commits).
     private var keyTextAccumulator: [String]?
@@ -25,6 +42,7 @@ final class TerminalSurfaceView: NSView, NSTextInputClient {
 
     init(runtime: GhosttyRuntime, workingDirectory: String? = nil, command: String? = nil) {
         self.runtime = runtime
+        self.command = command
         super.init(frame: NSRect(x: 0, y: 0, width: 800, height: 600))
 
         var config = ghostty_surface_config_new()
@@ -33,18 +51,33 @@ final class TerminalSurfaceView: NSView, NSTextInputClient {
         config.userdata = Unmanaged.passUnretained(self).toOpaque()
         config.scale_factor = Double(NSScreen.main?.backingScaleFactor ?? 2)
         config.context = GHOSTTY_SURFACE_CONTEXT_TAB
+        // A shell that exits must never close its terminal (or, for the last
+        // one, the window and the app). libghostty reports the exit through
+        // GHOSTTY_ACTION_SHOW_CHILD_EXITED and keeps the surface.
+        config.wait_after_command = true
 
         let cwd = workingDirectory ?? FileManager.default.homeDirectoryForCurrentUser.path
         self.workingDirectory = cwd
         surface = cwd.withCString { cwdPtr in
             config.working_directory = cwdPtr
-            if let command {
-                return command.withCString { commandPtr in
-                    config.command = commandPtr
-                    return ghostty_surface_new(runtime.app, &config)
+            // UNSHELL=1 lets shell rc files tell Unshell terminals apart (for
+            // example, to skip auto-attaching every terminal to one tmux session).
+            return "UNSHELL".withCString { keyPtr in
+                "1".withCString { valuePtr in
+                    var env = [ghostty_env_var_s(key: keyPtr, value: valuePtr)]
+                    return env.withUnsafeMutableBufferPointer { envPtr in
+                        config.env_vars = envPtr.baseAddress
+                        config.env_var_count = envPtr.count
+                        if let command {
+                            return command.withCString { commandPtr in
+                                config.command = commandPtr
+                                return ghostty_surface_new(runtime.app, &config)
+                            }
+                        }
+                        return ghostty_surface_new(runtime.app, &config)
+                    }
                 }
             }
-            return ghostty_surface_new(runtime.app, &config)
         }
 
         if surface == nil {
@@ -55,6 +88,10 @@ final class TerminalSurfaceView: NSView, NSTextInputClient {
 
     @available(*, unavailable)
     required init?(coder: NSCoder) { fatalError("not used") }
+
+    func markExited(code: UInt32, runtimeMs: UInt64) {
+        exitStatus = ExitStatus(code: code, runtimeMs: runtimeMs)
+    }
 
     /// Must be called before the view is released; libghostty holds a pointer to it.
     func destroy() {
@@ -123,6 +160,14 @@ final class TerminalSurfaceView: NSView, NSTextInputClient {
     // MARK: Keyboard
 
     override func keyDown(with event: NSEvent) {
+        // libghostty closes an exited surface on any key that encodes text, so
+        // keys never reach it once the process is gone: Return restarts.
+        if hasExited {
+            if event.keyCode == UInt16(kVK_Return) || event.keyCode == UInt16(kVK_ANSI_KeypadEnter) {
+                onRestartRequested?(self)
+            }
+            return
+        }
         guard let surface else {
             interpretKeyEvents([event])
             return
@@ -175,10 +220,12 @@ final class TerminalSurfaceView: NSView, NSTextInputClient {
     }
 
     override func keyUp(with event: NSEvent) {
+        if hasExited { return }
         sendKey(GHOSTTY_ACTION_RELEASE, event: event)
     }
 
     override func flagsChanged(with event: NSEvent) {
+        if hasExited { return }
         guard let modifier = GhosttyInput.modifierFlag(forKeyCode: event.keyCode) else { return }
         let pressed = event.modifierFlags.contains(modifier)
         sendKey(pressed ? GHOSTTY_ACTION_PRESS : GHOSTTY_ACTION_RELEASE, event: event)
@@ -187,7 +234,7 @@ final class TerminalSurfaceView: NSView, NSTextInputClient {
     /// Cmd/Ctrl chords arrive here before keyDown. Let libghostty claim the ones
     /// bound in its config (copy, paste, new tab...); everything else goes to the menu.
     override func performKeyEquivalent(with event: NSEvent) -> Bool {
-        guard event.type == .keyDown, window?.firstResponder === self, let surface else { return false }
+        guard event.type == .keyDown, window?.firstResponder === self, !hasExited, let surface else { return false }
         var keyEvent = GhosttyInput.keyEvent(for: event, action: GHOSTTY_ACTION_PRESS)
         var flags = ghostty_binding_flags_e(rawValue: 0)
         let isBinding = (event.characters ?? "").withCString { ptr -> Bool in
@@ -244,7 +291,7 @@ final class TerminalSurfaceView: NSView, NSTextInputClient {
             return
         }
         // Text not tied to a keyDown (dictation, emoji picker): send as committed input.
-        guard let surface, !text.isEmpty else { return }
+        guard let surface, !text.isEmpty, !hasExited else { return }
         var keyEvent = ghostty_input_key_s()
         keyEvent.action = GHOSTTY_ACTION_PRESS
         keyEvent.mods = GHOSTTY_MODS_NONE
