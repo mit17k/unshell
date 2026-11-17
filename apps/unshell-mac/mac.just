@@ -6,10 +6,18 @@ zig_version := "0.17.0"
 mac_dir := justfile_directory() / "apps/unshell-mac"
 mac_cache := justfile_directory() / ".cache/unshell-mac"
 
+# Xcode owns the native toolchain. Each recipe starts with this guard: Apple's
+# tools first on PATH (a Nix or Homebrew profile may ship GNU libtool, which
+# rejects `-static`), and no SDKROOT/DEVELOPER_DIR pointing into /nix/store.
+mac_toolchain_guard := '''export PATH="/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
+    case "${SDKROOT:-}" in /nix/store/*) unset SDKROOT ;; esac
+    case "${DEVELOPER_DIR:-}" in /nix/store/*) unset DEVELOPER_DIR ;; esac'''
+
 # Build GhosttyKit.xcframework from the pinned Ghostty tag (needs full Xcode)
 ghostty-kit:
     #!/usr/bin/env bash
     set -euo pipefail
+    {{mac_toolchain_guard}}
     mkdir -p "{{mac_cache}}"
     arch="$(uname -m)"; [ "$arch" = arm64 ] && arch=aarch64
     if command -v zig >/dev/null && [ "$(zig version)" = "{{zig_version}}" ]; then
@@ -28,12 +36,9 @@ ghostty-kit:
       git clone --depth 1 --branch "{{ghostty_version}}" https://github.com/ghostty-org/ghostty.git "$src"
     fi
     cd "$src"
-    # Apple's libtool/ar/ranlib must win over GNU ones from Nix or Homebrew
-    # (GNU libtool rejects `-static`).
-    export PATH="/usr/bin:$PATH"
-    if ! xcrun -sdk macosx metal --version >/dev/null 2>&1; then
+    if ! /usr/bin/xcrun --sdk macosx metal --version >/dev/null 2>&1; then
       echo "Metal Toolchain missing; downloading it with xcodebuild"
-      xcodebuild -downloadComponent MetalToolchain
+      /usr/bin/xcodebuild -downloadComponent MetalToolchain
     fi
     "$zig" build -Doptimize=ReleaseFast -Demit-xcframework=true -Demit-macos-app=false -Dxcframework-target=native
     rm -rf "{{mac_dir}}/Vendor/GhosttyKit.xcframework" "{{mac_dir}}/Vendor/share"
@@ -44,14 +49,19 @@ ghostty-kit:
 
 # Compile the Swift app (debug by default: just mac-build release)
 mac-build config="debug":
-    cd "{{mac_dir}}" && swift build -c {{config}}
+    #!/usr/bin/env bash
+    set -euo pipefail
+    {{mac_toolchain_guard}}
+    cd "{{mac_dir}}"
+    /usr/bin/swift build -c {{config}}
 
 # Assemble Unshell.app (binary, Info.plist, Ghostty resources, terminfo)
 mac-app config="debug": (mac-build config)
     #!/usr/bin/env bash
     set -euo pipefail
+    {{mac_toolchain_guard}}
     cd "{{mac_dir}}"
-    bin="$(swift build -c {{config}} --show-bin-path)/Unshell"
+    bin="$(/usr/bin/swift build -c {{config}} --show-bin-path)/Unshell"
     app=".build/Unshell.app"
     rm -rf "$app"
     mkdir -p "$app/Contents/MacOS" "$app/Contents/Resources"
@@ -61,13 +71,19 @@ mac-app config="debug": (mac-build config)
     # libghostty finds its resources by looking for Contents/Resources/terminfo.
     cp -R Vendor/share/ghostty "$app/Contents/Resources/ghostty"
     cp -R Vendor/share/terminfo "$app/Contents/Resources/terminfo"
-    codesign --force --sign - "$app" >/dev/null
+    /usr/bin/codesign --force --sign - "$app" >/dev/null
     echo "{{mac_dir}}/$app"
 
 # Build and launch the app
 mac-run config="debug": (mac-app config)
-    open "{{mac_dir}}/.build/Unshell.app"
+    #!/usr/bin/env bash
+    set -euo pipefail
+    {{mac_toolchain_guard}}
+    /usr/bin/open "{{mac_dir}}/.build/Unshell.app"
 
 # Launch with N terminals flooding output, to measure CPU/RAM (shown bottom-left)
 mac-stress count="50" config="release": (mac-app config)
-    UNSHELL_STRESS={{count}} "{{mac_dir}}/.build/Unshell.app/Contents/MacOS/Unshell"
+    #!/usr/bin/env bash
+    set -euo pipefail
+    {{mac_toolchain_guard}}
+    UNSHELL_STRESS={{count}} exec "{{mac_dir}}/.build/Unshell.app/Contents/MacOS/Unshell"
