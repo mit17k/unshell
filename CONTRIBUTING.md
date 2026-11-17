@@ -11,15 +11,21 @@ environments use a predictable layout. A fast, deeply integrated code viewer rem
 
 ## Technical direction
 
-- Use TypeScript, Node.js, and pnpm workspaces. Keep the stack small and use established community tools.
-- Use Electron, React, and Vite for the desktop; Fastify for the API; Commander for the CLI.
-- Target macOS and Linux desktops. The API and CLI are independent Node.js processes.
+- The desktop is moving to a native macOS app in Swift (`apps/unshell-mac`): AppKit core, terminals on libghostty
+  (GhosttyKit built from a pinned Ghostty tag), SwiftPM with no Xcode project. macOS only, for performance with large
+  codebases and dozens of concurrent agent terminals. The Electron app (`apps/unshell-desktop`) stays until the Swift
+  app reaches parity and its removal is explicitly approved.
+- Domain logic stays in TypeScript, Node.js, and pnpm workspaces: Fastify for the API (a loopback sidecar daemon for the
+  Swift app), Commander for the CLI. Keep the stack small and use established community tools.
+- The API and CLI are independent Node.js processes.
 - Do not introduce Rust, Elixir, another desktop shell, a monorepo orchestrator, or a microservice split without an
   explicit need.
 - This architecture supersedes the former Rust/GPUI direction. The previous application is available in Git history.
 
 ## Repository architecture
 
+- `apps/unshell-mac` owns the native macOS app: windows, terminals (libghostty surfaces), and native UI. See its
+  README for build commands (`just ghostty-kit`, `just mac-run`).
 - `apps/unshell-desktop` owns Electron lifecycle, preload IPC, React composition, routes, and feature flows.
 - `apps/unshell-api` owns coordination, domain operations, persistence, and local filesystem/process adapters.
 - `apps/unshell-cli` owns commands and agent-facing output. It calls the API rather than duplicating domain logic.

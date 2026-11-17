@@ -48,3 +48,5 @@ release-check:
 
 verify:
     pnpm verify
+
+import 'apps/unshell-mac/mac.just'

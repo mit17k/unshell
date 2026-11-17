@@ -16,3 +16,8 @@ Thumbs.db
 .vscode/
 *.swp
 *.swo
+
+# Native macOS app
+.cache/
+apps/unshell-mac/.build/
+apps/unshell-mac/Vendor/
