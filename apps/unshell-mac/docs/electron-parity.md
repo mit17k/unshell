@@ -52,13 +52,13 @@ The Electron app's production window is empty: everything user-visible lives beh
 
 ## Code viewer
 
-| Item                                             | What it does                                                                                                                                                         | Swift equivalent                                                                                           | Status |
-| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | ------ |
-| `code/highlighter.ts` (Shiki 4, JS regex engine) | TextMate grammar highlighting in Tokyo Night, lazy grammar loading                                                                                                   | SwiftTreeSitter 0.25 with vendored grammars (`grammars.tsv`); captures mapped by `CaptureTheme.tokyoNight` | done   |
-| `code/languages.ts`                              | 25 languages (TS, TSX, JS, Python, Go, Rust, Java, Kotlin, Swift, C, C++, C#, Ruby, PHP, Elixir, Shell, SQL, HTML, CSS, JSON, YAML, TOML, Markdown, Dockerfile, Nix) | `CodeLanguages` (same 25 ids, tree-sitter grammars)                                                        | done   |
-| `code/semantic.ts` (`SemanticTokenProvider`)     | LSP semantic token decoding and layering over grammar tokens, Tokyo Night colours                                                                                    | `SemanticTokenProvider` protocol, `SemanticTokens.decode/apply` over capture runs                          | done   |
-| `code/CodeViewer.tsx`                            | Header (file, language, line count), gutter, line hover; renders every line                                                                                          | `CodeViewerView`: TextKit 2, viewport-only chunked highlighting off the main thread, line-number ruler     | done   |
-| `code/semantic.test.ts`                          | Decoding and layering tests                                                                                                                                          | `Tests/UnshellCodeTests` (`just mac-test`), plus all 25 samples                                            | done   |
+| Item                                             | What it does                                                                                                                                                         | Swift equivalent                                                                                                     | Status |
+| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | ------ |
+| `code/highlighter.ts` (Shiki 4, JS regex engine) | TextMate grammar highlighting in Tokyo Night, lazy grammar loading                                                                                                   | SwiftTreeSitter 0.25 with vendored grammars (`grammars.tsv`); captures mapped by `CaptureTheme.tokyoNight`           | done   |
+| `code/languages.ts`                              | 25 languages (TS, TSX, JS, Python, Go, Rust, Java, Kotlin, Swift, C, C++, C#, Ruby, PHP, Elixir, Shell, SQL, HTML, CSS, JSON, YAML, TOML, Markdown, Dockerfile, Nix) | `CodeLanguages` (same 25 ids, tree-sitter grammars)                                                                  | done   |
+| `code/semantic.ts` (`SemanticTokenProvider`)     | LSP semantic token decoding and layering over grammar tokens, Tokyo Night colours                                                                                    | `SemanticTokenProvider` protocol, `SemanticTokens.decode/apply` over capture runs                                    | done   |
+| `code/CodeViewer.tsx`                            | Header (file, language, line count), gutter, line hover; renders every line                                                                                          | `CodeViewerView`: CodeEditTextView, no wrap (toggle), viewport-only chunked highlighting off the main thread, gutter | done   |
+| `code/semantic.test.ts`                          | Decoding and layering tests                                                                                                                                          | `Tests/UnshellCodeTests` (`just mac-test`), plus all 25 samples                                                      | done   |
 
 ## Development area
 
@@ -74,25 +74,33 @@ The Electron app's production window is empty: everything user-visible lives beh
 
 ### Code viewer measurements
 
-`just mac-code-bench` (optimized build, 50,000-line TypeScript file, 1.79 M characters, 120 Hz display):
+`just mac-code-bench` (optimized build, 120 Hz display). The viewer is CodeEditTextView 0.12.1 with no wrapping and
+horizontal scrolling; wrapping is a toggle (Dev › Code viewer, `UNSHELL_CODE_WRAP=1` for the benchmark).
 
-| Metric                                 | Result                             |
-| -------------------------------------- | ---------------------------------- |
-| First paint (plain text)               | 27 ms                              |
-| Full parse (background)                | 133 ms                             |
-| First highlighted paint                | 180 ms                             |
-| Jump to 25/50/75/100 %                 | 2–4 ms paint, 12–15 ms highlighted |
-| Display-linked scroll, 3 lines a frame | 8.75 ms average frame, p95 8.33 ms |
-| Dropped frames over 600 frames         | 30                                 |
-| Main-thread work per frame             | 3.2 ms average, 5.6 ms max         |
+| Metric                               | 50k lines, no wrap    | 50k lines, wrap       | 100 lines × 12k chars, no wrap |
+| ------------------------------------ | --------------------- | --------------------- | ------------------------------ |
+| Characters                           | 1.79 M                | 1.79 M                | 1.20 M                         |
+| First paint (plain text)             | 30 ms                 | 30 ms                 | 29 ms                          |
+| Parse (background)                   | 127 ms                | 124 ms                | 108 ms                         |
+| First highlighted paint              | 180 ms                | 176 ms                | 139 ms                         |
+| Jump to 25/50/75/100 % (paint)       | 2–7 ms                | 2–7 ms                | 4–34 ms                        |
+| Jump, highlighted                    | 10–22 ms              | 10–23 ms              | 24–62 ms                       |
+| Vertical scroll, 3 lines a frame     | 8.56 ms avg, p95 8.33 | 8.56 ms avg, p95 8.33 | 8.63 ms avg, p95 8.33          |
+| Dropped frames over 600              | 16                    | 16                    | 20                             |
+| Horizontal scroll, 60 pt a frame     | –                     | –                     | 9.81 ms avg, p95 18.0          |
+| Dropped frames over 600 (horizontal) | –                     | –                     | 106                            |
+| Main-thread work per frame           | 0.49 ms avg           | 0.51 ms avg           | 0.70 ms avg (0.17 horizontal)  |
 
-Differences from the Electron viewer:
+The previous TextKit 2 viewer needed soft wrap to be fast (27 ms first paint, 8.75 ms frames on the same 50k-line file);
+without wrapping it laid out everything above the viewport on each scroll (764 ms first paint, 37 ms frames).
 
-- **Soft wrap.** Long lines wrap at the viewport width. A non-wrapping TextKit 2 view lays out everything above the
-  viewport on each scroll (764 ms first paint and 37 ms frames on the same file), so wrapping is what keeps TextKit 2
-  fast; a horizontal-scroll mode would need a custom layout (for example CodeEditTextView).
-- **Colour only.** Highlights are TextKit 2 rendering attributes, which do not change fonts, so italic comments and bold
-  headings render upright.
+Two fixes make long lines work. `TextView` is created empty and gets its text after it is in the scroll view; otherwise
+it lays out every line up front, one view per line. And `ClippedLineFragmentView` draws only the glyph runs, and the
+glyphs within a run, that intersect the dirty rect: CodeEditTextView's default view draws the whole line on each redraw,
+which made horizontal scrolling of 12k-character lines take 322 ms a frame.
+
+Remaining differences from the Electron viewer:
+
 - **No injections yet.** Markdown uses the block grammar only (inline emphasis and links are plain), and HTML does not
   highlight embedded `<script>`/`<style>`.
 

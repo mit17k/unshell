@@ -44,6 +44,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/ChimeHQ/SwiftTreeSitter", exact: "0.25.0"),
+        .package(url: "https://github.com/CodeEditApp/CodeEditTextView", exact: "0.12.1"),
     ],
     targets: [
         .binaryTarget(
@@ -61,7 +62,11 @@ let package = Package(
         ),
         .executableTarget(
             name: "Unshell",
-            dependencies: ["GhosttyKit", "UnshellCode"],
+            dependencies: [
+                "GhosttyKit",
+                "UnshellCode",
+                .product(name: "CodeEditTextView", package: "CodeEditTextView"),
+            ],
             path: "Sources/Unshell",
             swiftSettings: [
                 // C callbacks from libghostty are not Sendable-annotated; stay on

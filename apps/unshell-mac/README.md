@@ -14,8 +14,9 @@ The Unshell desktop: a native macOS app in Swift. It replaces the deprecated Ele
   so their renderers idle while their shells keep running. Title updates are batched to protect the sidebar from agents
   that animate their titles.
 - **Code viewer.** `UnshellCode` (no AppKit, unit-tested) wraps SwiftTreeSitter with 25 grammars pinned in
-  `grammars.tsv`. `CodeViewerView` renders read-only TextKit 2 with soft wrap and colours only the chunks near the
-  viewport, computed off the main thread. 50,000 lines: 27 ms first paint, 8.75 ms average frame while scrolling.
+  `grammars.tsv`. `CodeViewerView` renders read-only on CodeEditTextView (no wrap, horizontal scroll; wrap is a toggle)
+  and styles only the chunks near the viewport, computed off the main thread. 50,000 lines: 30 ms first paint, 8.56 ms
+  average frame while scrolling; 12,000-character lines scroll sideways at 9.8 ms a frame.
 - **Design system.** `Theme/Theme.swift` holds every Tokyo Night token; `UI/` holds the components.
 - **Development views.** `Dev/` (Design system, Code viewer, Terminal playground) exists only in Debug builds, behind
   the Dev menu.

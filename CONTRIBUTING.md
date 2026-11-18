@@ -12,8 +12,8 @@ environments use a predictable layout. A fast, deeply integrated code viewer rem
 ## Technical direction
 
 - The desktop is the native macOS app in Swift (`apps/unshell-mac`): AppKit core, terminals on libghostty (GhosttyKit
-  built from a pinned Ghostty tag), a TextKit 2 code viewer highlighted by tree-sitter, SwiftPM with no Xcode project.
-  macOS only, for performance with large codebases and dozens of concurrent agent terminals.
+  built from a pinned Ghostty tag), a CodeEditTextView code viewer highlighted by tree-sitter, SwiftPM with no Xcode
+  project. macOS only, for performance with large codebases and dozens of concurrent agent terminals.
 - The Electron app (`apps/unshell-desktop`) is deprecated pending removal. Do not add features to it. It is deleted only
   after its removal is explicitly approved; `apps/unshell-mac/docs/electron-parity.md` tracks what replaced each part.
 - Domain logic stays in TypeScript, Node.js, and pnpm workspaces: Fastify for the API (a loopback sidecar daemon for the

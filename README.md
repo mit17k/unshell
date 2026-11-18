@@ -15,10 +15,10 @@ the same capabilities. Unshell retains its opinionated workspace layout and the 
 | `unshell-cli`     | Node.js, TypeScript, Commander                     | Developer and agent interface to the API            |
 | `unshell-desktop` | Electron, React, TypeScript, Vite (**deprecated**) | Former desktop, kept until its removal is approved  |
 
-The desktop is a native macOS app: terminals are libghostty surfaces and the code viewer uses tree-sitter on TextKit 2.
-Domain logic stays in TypeScript: the API runs as a loopback sidecar and the CLI is the agent-facing surface. pnpm
-workspaces manage the TypeScript side without an additional build orchestrator; SwiftPM builds the app. Runtime schemas
-live in `@unshell/contracts`; the CLI uses `@unshell/sdk` for validated HTTP responses.
+The desktop is a native macOS app: terminals are libghostty surfaces and the code viewer uses tree-sitter on
+CodeEditTextView. Domain logic stays in TypeScript: the API runs as a loopback sidecar and the CLI is the agent-facing
+surface. pnpm workspaces manage the TypeScript side without an additional build orchestrator; SwiftPM builds the app.
+Runtime schemas live in `@unshell/contracts`; the CLI uses `@unshell/sdk` for validated HTTP responses.
 
 The Electron desktop (`apps/unshell-desktop`) is **deprecated pending removal**. Everything it did has a native
 equivalent or an explicit decision recorded in [the parity inventory](apps/unshell-mac/docs/electron-parity.md).

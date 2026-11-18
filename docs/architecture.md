@@ -39,9 +39,9 @@ authentication.
 ## Desktop boundary
 
 The desktop is `apps/unshell-mac`: AppKit windows, one libghostty app with a surface per terminal (Ghostty owns the PTY,
-IO thread and Metal renderer), and a TextKit 2 code viewer highlighted by tree-sitter off the main thread. It loads no
-web content, so there is no renderer sandbox or IPC bridge to secure. It will reach domain operations only through the
-loopback API, as the CLI does; it must not mutate workspace data itself. That wiring is not built yet.
+IO thread and Metal renderer), and a CodeEditTextView code viewer highlighted by tree-sitter off the main thread. It
+loads no web content, so there is no renderer sandbox or IPC bridge to secure. It will reach domain operations only
+through the loopback API, as the CLI does; it must not mutate workspace data itself. That wiring is not built yet.
 
 The design system (`Theme.swift`, `UI/`) carries the Tokyo Night tokens forward. Development views are compiled only in
 Debug builds (`#if DEBUG`), and `just mac-release-check` rejects any development marker in the release binary.

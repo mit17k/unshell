@@ -27,6 +27,19 @@ enum CodeSamples {
         return try? String(contentsOf: directory.appendingPathComponent(file), encoding: .utf8)
     }
 
+    /// Minified-style JavaScript: `lines` lines of about `width` characters each,
+    /// built from the JavaScript sample with whitespace collapsed.
+    static func minified(lines: Int, width: Int) -> String {
+        let sample = (text(for: "javascript") ?? "let a=1;")
+            .split(whereSeparator: { $0 == "\n" }).map { $0.trimmingCharacters(in: .whitespaces) }
+            // Line comments would swallow the rest of a joined line.
+            .filter { !$0.hasPrefix("//") && !$0.hasPrefix("/*") && !$0.hasPrefix("*") }
+            .joined(separator: " ")
+        var line = ""
+        while line.count < width { line += sample + ";" }
+        return Array(repeating: line, count: lines).joined(separator: "\n") + "\n"
+    }
+
     /// A TypeScript file of `lines` lines, built by repeating the sample.
     static func large(lines: Int) -> String {
         let sample = (text(for: "typescript") ?? "const x = 1;\n").split(separator: "\n", omittingEmptySubsequences: false)
@@ -41,16 +54,21 @@ enum CodeSamples {
 /// 50,000-line TypeScript file. Port of renderer/dev/views/CodeViewerView.tsx.
 final class CodeViewerDevView: NSView {
     private let host = NSView()
+    private weak var viewer: CodeViewerView?
     private var labels: [String: NSTextField] = [:]
     private static let largeId = "large"
+    private static let longId = "long"
 
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
         translatesAutoresizingMaskIntoConstraints = false
 
-        let list = NSStackView.vertical([Eyebrow("\(CodeLanguages.all.count) languages")], spacing: 0)
-        list.setCustomSpacing(Theme.Space.s3, after: list.arrangedSubviews[0])
-        let entries = CodeLanguages.all.map { ($0.id, $0.label) } + [(Self.largeId, "Large file · 50k lines")]
+        let wrapSwitch = USwitch("Wrap lines", isOn: false) { [weak self] on in self?.viewer?.wrapLines = on }
+        let list = NSStackView.vertical([wrapSwitch, Eyebrow("\(CodeLanguages.all.count) languages")], spacing: 0)
+        list.setCustomSpacing(Theme.Space.s5, after: wrapSwitch)
+        list.setCustomSpacing(Theme.Space.s3, after: list.arrangedSubviews[1])
+        let entries = CodeLanguages.all.map { ($0.id, $0.label) }
+            + [(Self.largeId, "Large file · 50k lines"), (Self.longId, "Long lines · 12k chars")]
         for (id, label) in entries {
             let field = UIText.label(UIText.attributed(label, family: .sans, size: Theme.TextSize.body,
                                                        color: Theme.Color.textSecondary))
@@ -93,19 +111,24 @@ final class CodeViewerDevView: NSView {
 
     private func show(_ id: String) {
         for (key, label) in labels {
-            let name = key == Self.largeId ? "Large file · 50k lines" : (CodeLanguages.find(key)?.label ?? key)
+            let name = key == Self.largeId ? "Large file · 50k lines"
+                : key == Self.longId ? "Long lines · 12k chars" : (CodeLanguages.find(key)?.label ?? key)
             label.attributedStringValue = UIText.attributed(name, family: .sans, size: Theme.TextSize.body,
                                                             color: key == id ? Theme.Color.textStrong : Theme.Color.textSecondary)
         }
         host.subviews.forEach { $0.removeFromSuperview() }
         let viewer: CodeViewerView
-        if id == Self.largeId {
+        if id == Self.longId {
+            viewer = CodeViewerView(text: CodeSamples.minified(lines: 100, width: 12_000),
+                                    language: CodeLanguages.find("javascript"), filename: "minified.js")
+        } else if id == Self.largeId {
             viewer = CodeViewerView(text: CodeSamples.large(lines: 50_000), language: CodeLanguages.find("typescript"),
                                     filename: "large.ts")
         } else {
             guard let language = CodeLanguages.find(id), let text = CodeSamples.text(for: id) else { return }
             viewer = CodeViewerView(text: text, language: language, filename: CodeSamples.files[id])
         }
+        self.viewer = viewer
         host.addSubview(viewer)
         NSLayoutConstraint.activate([
             viewer.leadingAnchor.constraint(equalTo: host.leadingAnchor),
@@ -141,8 +164,16 @@ final class CodeViewerBenchmark: NSObject {
 
     private func ms(_ seconds: CFTimeInterval) -> Double { (seconds * 100_000).rounded() / 100 }
 
+    private var longLines = false
+
     private func start(lines: Int) {
-        let text = CodeSamples.large(lines: lines)
+        let env = ProcessInfo.processInfo.environment
+        longLines = env["UNSHELL_CODE_BENCH_KIND"] == "long"
+        let wrap = env["UNSHELL_CODE_WRAP"] != nil
+        let text = longLines ? CodeSamples.minified(lines: lines, width: 12_000) : CodeSamples.large(lines: lines)
+        let language = CodeLanguages.find(longLines ? "javascript" : "typescript")
+        results["kind"] = longLines ? "long-lines (12k chars)" : "typescript"
+        results["wrap"] = wrap
         results["lines"] = lines
         results["characters"] = (text as NSString).length
 
@@ -153,7 +184,8 @@ final class CodeViewerBenchmark: NSObject {
         window.makeKeyAndOrderFront(nil)
 
         let t0 = CACurrentMediaTime()
-        viewer = CodeViewerView(text: text, language: CodeLanguages.find("typescript"), filename: "large.ts")
+        viewer = CodeViewerView(text: text, language: language, filename: longLines ? "minified.js" : "large.ts",
+                                wrapLines: wrap)
         window.contentView = viewer
         window.layoutIfNeeded()
         window.displayIfNeeded()
@@ -218,13 +250,17 @@ final class CodeViewerBenchmark: NSObject {
         self.link = link
     }
 
+    /// Second phase for long lines: scroll right, 60 pt a frame.
+    private var horizontal = false
+    private var verticalResult: [String: Any] = [:]
+
     @objc private func tick(_ link: CADisplayLink) {
         frameDuration = link.duration > 0 ? link.duration : frameDuration
         ticks.append(link.timestamp)
         let start = CACurrentMediaTime()
         let clip = viewer.scrollView.contentView
         var origin = clip.bounds.origin
-        origin.y += CodeViewerView.lineHeight * 3
+        if horizontal { origin.x += 60 } else { origin.y += CodeViewerView.lineHeight * 3 }
         clip.scroll(to: origin)
         viewer.scrollView.reflectScrolledClipView(clip)
         window.layoutIfNeeded()
@@ -243,7 +279,7 @@ final class CodeViewerBenchmark: NSObject {
         link?.invalidate()
         let intervals = zip(ticks.dropFirst(), ticks).map { $0 - $1 }
         let dropped = intervals.reduce(0) { $0 + max(0, Int(($1 / frameDuration).rounded()) - 1) }
-        results["scroll"] = [
+        let summary: [String: Any] = [
             "frames": ticks.count,
             "refreshHz": (1 / frameDuration).rounded(),
             "frameIntervalAvgMs": ms(intervals.reduce(0, +) / Double(max(1, intervals.count))),
@@ -253,8 +289,20 @@ final class CodeViewerBenchmark: NSObject {
             "mainThreadWorkAvgMs": ms(tickWork.reduce(0, +) / Double(max(1, tickWork.count))),
             "mainThreadWorkP95Ms": ms(percentile(tickWork, 0.95)),
             "mainThreadWorkMaxMs": ms(tickWork.max() ?? 0),
-            "linesScrolled": ticks.count * 3,
+            (horizontal ? "pointsScrolledRight" : "linesScrolled"): ticks.count * (horizontal ? 60 : 3),
         ]
+        if longLines && !horizontal {
+            // Then scroll right along the long lines, from the top.
+            results["scroll"] = summary
+            horizontal = true
+            ticks.removeAll()
+            tickWork.removeAll()
+            viewer.scrollView.contentView.scroll(to: .zero)
+            viewer.scrollView.reflectScrolledClipView(viewer.scrollView.contentView)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { self.startScrolling() }
+            return
+        }
+        results[horizontal ? "scrollHorizontal" : "scroll"] = summary
         let data = try! JSONSerialization.data(withJSONObject: results, options: [.prettyPrinted, .sortedKeys])
         FileHandle.standardOutput.write(data)
         FileHandle.standardOutput.write("\n".data(using: .utf8)!)

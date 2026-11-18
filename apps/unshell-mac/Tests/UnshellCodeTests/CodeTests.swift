@@ -68,6 +68,21 @@ let sampleFiles: [String: String] = [
         #expect(escapeRun.style.color != string)
     }
 
+    @Test func highlightsInsideAVeryLongLine() throws {
+        // Minified-style JavaScript: one 20,000-character line, queried mid-line
+        // as the viewer does for a horizontally scrolled chunk.
+        let statement = "const value=compute(1,'two',[3]);"
+        let line = String(repeating: statement, count: 20_000 / statement.count + 1)
+        let highlighter = try SyntaxHighlighter(text: line, language: CodeLanguages.find("javascript")!,
+                                                queriesDirectory: queries)
+        let window = NSRange(location: 10_000, length: 8_192)
+        let runs = try highlighter.runs(in: window)
+        #expect(runs.allSatisfy { NSLocationInRange($0.range.location, window) })
+        let colors = Set(runs.map(\.style.color))
+        #expect(colors.contains(CaptureTheme.tokyoNight.style(for: "string")!.color))
+        #expect(colors.contains(CaptureTheme.tokyoNight.style(for: "keyword")!.color))
+    }
+
     @Test func captureNamesFallBackToTheirParent() {
         let theme = CaptureTheme.tokyoNight
         #expect(theme.style(for: "function.method.call") == theme.style(for: "function.method"))
