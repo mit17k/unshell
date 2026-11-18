@@ -3,6 +3,7 @@ import AppKit
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private(set) var runtime: GhosttyRuntime?
     private var windowController: TerminalWindowController?
+    private var home: HomeWindowController?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.mainMenu = MainMenu.build()
@@ -20,18 +21,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         self.runtime = runtime
 
+        // The terminal window exists from launch (it receives libghostty's
+        // events) but is shown only when a terminal is opened.
         let controller = TerminalWindowController(runtime: runtime)
         runtime.delegate = controller
         windowController = controller
-        controller.showWindow(nil)
+        // With no terminals left, go back to the home screen rather than quit.
+        controller.onAllTerminalsClosed = { [weak self] in self?.showHome() }
 
         // UNSHELL_STRESS=<n> opens n terminals running UNSHELL_STRESS_CMD (or a
         // default output flood) to measure the cost of many live surfaces.
         let env = ProcessInfo.processInfo.environment
         if let raw = env["UNSHELL_STRESS"], let count = Int(raw), count > 0 {
+            controller.showWindow(nil)
             controller.openStressTerminals(count: count, command: env["UNSHELL_STRESS_CMD"])
         } else {
-            controller.newTerminal()
+            showHome()
         }
 
         NSApp.activate(ignoringOtherApps: true)
@@ -43,6 +48,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         CodeViewerBenchmark.runIfRequested()
         #endif
+    }
+
+    private func showHome() {
+        let home = self.home ?? HomeWindowController(onNewTerminal: { [weak self] in self?.newTerminalAction(nil) })
+        self.home = home
+        home.showWindow(nil)
+    }
+
+    /// Shell › New Terminal (⌘T) when no terminal window is key, and the home
+    /// screen's New Terminal button: show the terminal window, open a terminal.
+    @objc func newTerminalAction(_ sender: Any?) {
+        guard let controller = windowController else { return }
+        controller.showWindow(nil)
+        controller.newTerminal()
+        home?.window?.orderOut(nil)
     }
 
     func applicationDidBecomeActive(_ notification: Notification) {

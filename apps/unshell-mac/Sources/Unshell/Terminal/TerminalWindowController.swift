@@ -6,6 +6,8 @@ import GhosttyKit
 /// visible, the rest are occluded so their renderers idle.
 final class TerminalWindowController: NSWindowController, GhosttyRuntimeDelegate {
     private let runtime: GhosttyRuntime
+    /// Called after the last terminal closes and the window has closed.
+    var onAllTerminalsClosed: (() -> Void)?
     private var terminals: [TerminalSurfaceView] = []
     private var selectedIndex: Int?
 
@@ -197,6 +199,7 @@ final class TerminalWindowController: NSWindowController, GhosttyRuntimeDelegate
         if terminals.isEmpty {
             selectedIndex = nil
             window?.close()
+            onAllTerminalsClosed?()
             return
         }
         selectedIndex = nil
