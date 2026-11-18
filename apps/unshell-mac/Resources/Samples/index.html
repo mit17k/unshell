@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Unshell · Workspaces</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <!-- Workspace switcher -->
+    <header class="topbar">
+      <a href="/" class="brand">Unshell</a>
+      <nav aria-label="Primary">
+        <a href="/workspaces" aria-current="page">Workspaces</a>
+        <a href="/agents">Agents</a>
+      </nav>
+    </header>
+    <main id="app" data-theme="tokyo-night">
+      <form action="/workspaces" method="post">
+        <label for="name">Workspace name</label>
+        <input id="name" name="name" required pattern="[a-z0-9-]+" />
+        <button type="submit" disabled>Create</button>
+      </form>
+    </main>
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>

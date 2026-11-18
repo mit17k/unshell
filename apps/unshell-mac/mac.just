@@ -53,6 +53,9 @@ mac-build config="debug":
     set -euo pipefail
     {{mac_toolchain_guard}}
     cd "{{mac_dir}}"
+    for input in Vendor/GhosttyKit.xcframework:ghostty-kit Vendor/TreeSitterGrammars:tree-sitter-grammars; do
+      [ -e "${input%%:*}" ] || { echo "error: ${input%%:*} missing; run \`just ${input##*:}\` first" >&2; exit 1; }
+    done
     /usr/bin/swift build -c {{config}}
 
 # Assemble Unshell.app (binary, Info.plist, Ghostty resources, terminfo)
@@ -68,6 +71,14 @@ mac-app config="debug": (mac-build config)
     cp "$bin" "$app/Contents/MacOS/Unshell"
     cp Support/Info.plist "$app/Contents/Info.plist"
     cp Resources/unshell-ghostty.conf "$app/Contents/Resources/"
+    # Code viewer highlight queries, one directory per grammar.
+    for grammar in Vendor/TreeSitterGrammars/*/; do
+      name="$(basename "$grammar")"
+      mkdir -p "$app/Contents/Resources/TreeSitter/$name/queries"
+      cp "$grammar/queries/highlights.scm" "$app/Contents/Resources/TreeSitter/$name/queries/"
+    done
+    # Dev-only sample files ship in Debug bundles only.
+    if [ "{{config}}" = "debug" ]; then cp -R Resources/Samples "$app/Contents/Resources/Samples"; fi
     # libghostty finds its resources by looking for Contents/Resources/terminfo.
     cp -R Vendor/share/ghostty "$app/Contents/Resources/ghostty"
     cp -R Vendor/share/terminfo "$app/Contents/Resources/terminfo"
@@ -98,7 +109,8 @@ mac-release-check: (mac-build "release") (mac-build "debug")
     cd "{{mac_dir}}"
     release="$(/usr/bin/swift build -c release --show-bin-path)/Unshell"
     debug="$(/usr/bin/swift build -c debug --show-bin-path)/Unshell"
-    markers=("Development only" "DesignSystemView" "TerminalPlaygroundView" "DevWindowController" "UNSHELL_SNAPSHOT")
+    markers=("Development only" "DesignSystemView" "TerminalPlaygroundView" "DevWindowController" "UNSHELL_SNAPSHOT"
+             "CodeViewerDevView" "CodeViewerBenchmark" "UNSHELL_CODE_BENCH" "UNSHELL_SAMPLES_DIR")
     /usr/bin/strings -a "$release" > "$TMPDIR/unshell-release.strings"
     /usr/bin/strings -a "$debug" > "$TMPDIR/unshell-debug.strings"
     status=0
@@ -114,3 +126,32 @@ mac-release-check: (mac-build "release") (mac-build "debug")
     done
     [ "$status" -eq 0 ] && echo "Release binary excludes development views and hooks (${#markers[@]} markers)."
     exit "$status"
+
+# Fetch the code viewer's tree-sitter grammars (grammars.tsv) into Vendor/
+tree-sitter-grammars:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    {{mac_toolchain_guard}}
+    "{{mac_dir}}/Support/fetch-grammars.sh" "{{mac_dir}}" "{{mac_cache}}"
+
+# Measure the code viewer on a generated file (default 50k lines): first paint,
+# first highlighted paint, parse time, jump latency and display-linked scroll.
+# Optimized build with the Debug-only benchmark compiled in (separate .build/bench).
+mac-code-bench lines="50000":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    {{mac_toolchain_guard}}
+    cd "{{mac_dir}}"
+    /usr/bin/swift build -c release -Xswiftc -DDEBUG --scratch-path .build/bench
+    UNSHELL_CODE_BENCH={{lines}} \
+      UNSHELL_QUERIES_DIR="{{mac_dir}}/Vendor/TreeSitterGrammars" \
+      UNSHELL_SAMPLES_DIR="{{mac_dir}}/Resources/Samples" \
+      "$(/usr/bin/swift build -c release --scratch-path .build/bench --show-bin-path)/Unshell"
+
+# Unit tests for the code viewer core (languages, highlighting, semantic tokens)
+mac-test:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    {{mac_toolchain_guard}}
+    cd "{{mac_dir}}"
+    /usr/bin/swift test

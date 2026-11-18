@@ -1,0 +1,39 @@
+# Tree-sitter grammars for the code viewer, fetched by `just tree-sitter-grammars`
+# into Vendor/TreeSitterGrammars (gitignored). One row per parser.
+#
+# columns (tab separated):
+#   id        module suffix and directory name
+#   repo      GitHub owner/name
+#   ref       tag or commit (SQL's generated parser only exists on gh-pages)
+#   dir       grammar directory inside the repo (holds src/)
+#   symbol    C entry point, tree_sitter_<symbol>
+#   queries   highlight query files, highest precedence first; `repo:path`
+#             reads from another row's checkout (TypeScript inherits JavaScript)
+#
+# JavaScript and C stay on 0.23.x: TypeScript and C++ inherit their queries and
+# are built against those versions.
+typescript	tree-sitter/tree-sitter-typescript	v0.23.2	typescript	typescript	queries/highlights.scm,javascript:queries/highlights.scm
+tsx	tree-sitter/tree-sitter-typescript	v0.23.2	tsx	tsx	queries/highlights.scm,javascript:queries/highlights-jsx.scm,javascript:queries/highlights.scm
+javascript	tree-sitter/tree-sitter-javascript	v0.23.1	.	javascript	queries/highlights-jsx.scm,queries/highlights.scm
+python	tree-sitter/tree-sitter-python	v0.25.0	.	python	queries/highlights.scm
+go	tree-sitter/tree-sitter-go	v0.25.0	.	go	queries/highlights.scm
+rust	tree-sitter/tree-sitter-rust	v0.24.2	.	rust	queries/highlights.scm
+java	tree-sitter/tree-sitter-java	v0.23.5	.	java	queries/highlights.scm
+kotlin	fwcd/tree-sitter-kotlin	0.3.8	.	kotlin	queries/highlights.scm
+swift	alex-pinkus/tree-sitter-swift	0.7.4-with-generated-files	.	swift	queries/highlights.scm
+c	tree-sitter/tree-sitter-c	v0.23.6	.	c	queries/highlights.scm
+cpp	tree-sitter/tree-sitter-cpp	v0.23.4	.	cpp	queries/highlights.scm,c:queries/highlights.scm
+csharp	tree-sitter/tree-sitter-c-sharp	v0.23.5	.	c_sharp	queries/highlights.scm
+ruby	tree-sitter/tree-sitter-ruby	v0.23.1	.	ruby	queries/highlights.scm
+php	tree-sitter/tree-sitter-php	v0.25.1	php	php	queries/highlights.scm
+elixir	elixir-lang/tree-sitter-elixir	v0.3.5	.	elixir	queries/highlights.scm
+bash	tree-sitter/tree-sitter-bash	v0.25.1	.	bash	queries/highlights.scm
+sql	DerekStride/tree-sitter-sql	2d088525f3f986108d969dab526a0d7129281e24	.	sql	queries/highlights.scm
+html	tree-sitter/tree-sitter-html	v0.23.2	.	html	queries/highlights.scm
+css	tree-sitter/tree-sitter-css	v0.25.0	.	css	queries/highlights.scm
+json	tree-sitter/tree-sitter-json	v0.24.8	.	json	queries/highlights.scm
+yaml	tree-sitter-grammars/tree-sitter-yaml	v0.7.2	.	yaml	queries/highlights.scm
+toml	tree-sitter-grammars/tree-sitter-toml	v0.7.0	.	toml	queries/highlights.scm
+markdown	tree-sitter-grammars/tree-sitter-markdown	v0.5.4	tree-sitter-markdown	markdown	tree-sitter-markdown/queries/highlights.scm
+dockerfile	camdencheek/tree-sitter-dockerfile	v0.2.0	.	dockerfile	queries/highlights.scm
+nix	nix-community/tree-sitter-nix	v0.3.0	.	nix	queries/highlights.scm

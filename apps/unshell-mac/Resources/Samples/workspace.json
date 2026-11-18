@@ -1,0 +1,14 @@
+{
+  "$schema": "https://unshell.dev/schema/workspace.json",
+  "name": "unshell",
+  "version": 1,
+  "repos": [
+    { "name": "api", "url": "git@gitlab.com:unshell/api.git", "default": true },
+    { "name": "desktop", "url": "git@gitlab.com:unshell/desktop.git", "default": false }
+  ],
+  "agents": {
+    "reviewer": { "model": "claude", "maxTurns": 40, "tools": ["read", "grep"] },
+    "fixer": null
+  },
+  "limits": { "cpu": 4, "memoryGb": 8.5, "network": false }
+}

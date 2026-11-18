@@ -1,0 +1,29 @@
+# Automation pipeline for a workspace
+name: verify
+on:
+  push:
+    branches: [main, "release/*"]
+  schedule:
+    - cron: "0 3 * * *"
+
+defaults: &defaults
+  timeout: 15m
+  retries: 2
+
+jobs:
+  lint:
+    <<: *defaults
+    run: pnpm lint
+  test:
+    <<: *defaults
+    needs: [lint]
+    env:
+      CI: true
+      NODE_OPTIONS: --max-old-space-size=4096
+    run: |
+      pnpm test
+      pnpm release:check
+  notify:
+    when: failure
+    agent: reviewer
+    enabled: false

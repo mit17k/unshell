@@ -1,0 +1,35 @@
+@import url("./tokens.css");
+
+:root {
+  --gutter: clamp(16px, 4vw, 48px);
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  height: 56px;
+  padding-inline: var(--gutter);
+  border-bottom: 1px solid #292e42;
+  background: rgb(22 22 30 / 90%);
+  backdrop-filter: blur(8px);
+}
+
+.topbar a[aria-current="page"]::after {
+  content: "";
+  display: block;
+  height: 1px;
+  background: #ff9e64;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .topbar a {
+    transition: color 140ms cubic-bezier(0.2, 0, 0, 1);
+  }
+}
+
+button:disabled:hover {
+  opacity: 0.4 !important;
+}

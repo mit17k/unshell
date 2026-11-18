@@ -41,6 +41,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if let devView = env["UNSHELL_DEV_VIEW"] {
             DevWindowController.shared.show(devView)
         }
+        CodeViewerBenchmark.runIfRequested()
         #endif
     }
 

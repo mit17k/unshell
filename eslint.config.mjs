@@ -17,6 +17,7 @@ export default tseslint.config(
       ".cache/**",
       "apps/unshell-mac/.build/**",
       "apps/unshell-mac/Vendor/**",
+      "apps/unshell-mac/Resources/Samples/**",
       "apps/unshell-desktop/src/renderer/dev/samples/**",
     ],
   },
