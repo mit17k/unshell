@@ -1,15 +1,16 @@
 # Architecture
 
-Unshell consists of three independently built applications in one pnpm workspace. TypeScript across all applications
-keeps shared contracts and tooling straightforward; Fastify and Commander keep the API and CLI small.
+Unshell consists of a native macOS desktop (Swift) and two TypeScript applications in one pnpm workspace. TypeScript for
+the domain keeps shared contracts and tooling straightforward; Fastify and Commander keep the API and CLI small. The
+desktop is native for performance with large codebases and dozens of agent terminals.
 
 ## Dependency direction
 
 ```text
-Electron renderer → preload bridge → Electron main → SDK → HTTP API
-CLI ───────────────────────────────────────────────→ SDK → HTTP API
-                                                        ↓
-                                                  shared contracts
+macOS app (Swift) ─── loopback HTTP (planned) ──→ HTTP API
+CLI ─────────────────────────────────────→ SDK → HTTP API
+                                                    ↓
+                                              shared contracts
 ```
 
 `apps/unshell-api` owns domain operations and future storage, process execution, agent lifecycle, and automation
@@ -37,14 +38,16 @@ authentication.
 
 ## Desktop boundary
 
-Electron main calls the SDK through a narrow, sender-validated IPC handler. Preload exposes only `overview()` via
-`contextBridge`. The renderer runs sandboxed with context isolation and without Node integration; navigation, new
-windows, webviews, and permission requests are denied. The renderer uses semantic CSS tokens carried forward from
-Unshell Dark. These boundaries follow
-[Electron's security guidance](https://www.electronjs.org/docs/latest/tutorial/security).
+The desktop is `apps/unshell-mac`: AppKit windows, one libghostty app with a surface per terminal (Ghostty owns the PTY,
+IO thread and Metal renderer), and a TextKit 2 code viewer highlighted by tree-sitter off the main thread. It loads no
+web content, so there is no renderer sandbox or IPC bridge to secure. It will reach domain operations only through the
+loopback API, as the CLI does; it must not mutate workspace data itself. That wiring is not built yet.
 
-The development component specimen uses `import.meta.env.DEV` and a conditional dynamic import. Production builds
-eliminate its code and controls. A release check also rejects leaked development strings and renderer URL overrides.
+The design system (`Theme.swift`, `UI/`) carries the Tokyo Night tokens forward. Development views are compiled only in
+Debug builds (`#if DEBUG`), and `just mac-release-check` rejects any development marker in the release binary.
+
+The Electron desktop (`apps/unshell-desktop`) is deprecated pending removal. Until then it keeps its original boundary:
+a sandboxed renderer with context isolation, no Node integration, and a narrow, sender-validated terminal IPC bridge.
 
 ## Migration sequence
 

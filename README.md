@@ -8,24 +8,31 @@ the same capabilities. Unshell retains its opinionated workspace layout and the 
 
 ## Architecture
 
-| App               | Stack                             | Responsibility                                      |
-| ----------------- | --------------------------------- | --------------------------------------------------- |
-| `unshell-desktop` | Electron, React, TypeScript, Vite | Desktop control center for macOS and Linux          |
-| `unshell-api`     | Node.js, TypeScript, Fastify      | Coordination and future domain/persistence services |
-| `unshell-cli`     | Node.js, TypeScript, Commander    | Developer and agent interface to the API            |
+| App               | Stack                                              | Responsibility                                      |
+| ----------------- | -------------------------------------------------- | --------------------------------------------------- |
+| `unshell-mac`     | Swift, AppKit, libghostty, tree-sitter, SwiftPM    | Desktop control center (macOS)                      |
+| `unshell-api`     | Node.js, TypeScript, Fastify                       | Coordination and future domain/persistence services |
+| `unshell-cli`     | Node.js, TypeScript, Commander                     | Developer and agent interface to the API            |
+| `unshell-desktop` | Electron, React, TypeScript, Vite (**deprecated**) | Former desktop, kept until its removal is approved  |
 
-pnpm workspaces manage the monorepo without an additional build orchestrator. All three applications share one language.
-Runtime schemas live in `@unshell/contracts`; the CLI uses `@unshell/sdk` for validated HTTP responses.
+The desktop is a native macOS app: terminals are libghostty surfaces and the code viewer uses tree-sitter on TextKit 2.
+Domain logic stays in TypeScript: the API runs as a loopback sidecar and the CLI is the agent-facing surface. pnpm
+workspaces manage the TypeScript side without an additional build orchestrator; SwiftPM builds the app. Runtime schemas
+live in `@unshell/contracts`; the CLI uses `@unshell/sdk` for validated HTTP responses.
+
+The Electron desktop (`apps/unshell-desktop`) is **deprecated pending removal**. Everything it did has a native
+equivalent or an explicit decision recorded in [the parity inventory](apps/unshell-mac/docs/electron-parity.md).
 
 ## Migration status
 
-This first migration establishes runnable apps, typed API communication, an empty desktop window, agent-friendly CLI
-output, production builds, packaging configuration, and shared quality gates.
+This first migration establishes runnable apps, typed API communication, the native desktop with terminals and a code
+viewer, agent-friendly CLI output, production builds, and shared quality gates.
 
 **Workspace creation, the workspace index/switcher, SQLite persistence and recovery, and the GPUI component catalog have
 not yet been ported.** The former Rust application has been removed from the repository; its implementation remains
 available in Git history. The new applications do not open, modify, or migrate the old SQLite database or managed
-directories. Existing workspace data remains in place but is not yet visible in Electron.
+directories. Existing workspace data remains in place but is not yet visible in the desktop. The desktop does not call
+the API yet.
 
 The API currently provides health and a capability catalog. Workspace, version-control, project, agent, and automation
 operations are explicitly marked **planned**. The next migration should port workspace validation, safe provisioning,
@@ -33,15 +40,19 @@ SQLite compatibility, recovery, and workspace navigation together.
 
 ## Getting started
 
-Install Node.js 22.12 or newer (24 LTS recommended) and pnpm 10.28.0. `just`, Nix, and direnv are optional.
+Install Node.js 22.12 or newer (24 LTS recommended), pnpm 10.28.0 and `just`. The desktop needs macOS 14+ with full
+Xcode (license accepted and first launch run). Nix and direnv are optional.
 
 ```bash
 pnpm install --frozen-lockfile
-pnpm dev
+just ghostty-kit            # once: builds GhosttyKit from the pinned Ghostty tag
+just tree-sitter-grammars   # once: fetches the code viewer grammars
+just run
 ```
 
-This builds shared packages and runs the API plus Electron with development reload. The API listens on
-`http://127.0.0.1:4317`. Changes to shared packages require restarting `pnpm dev` to rebuild them.
+`just run` (or `pnpm dev`) builds shared packages, then runs the API and the native app together; stopping either stops
+both. The API listens on `http://127.0.0.1:4317`. Changes to shared packages or Swift sources require restarting it. See
+[apps/unshell-mac/README.md](apps/unshell-mac/README.md) for the app's own commands.
 
 In another terminal:
 
@@ -67,12 +78,15 @@ separately with `UNSHELL_API_PORT`. Only loopback HTTP origins are supported in 
 | Command                  | Equivalent                       | Purpose                                                |
 | ------------------------ | -------------------------------- | ------------------------------------------------------ |
 | `just deps`              | `pnpm install --frozen-lockfile` | Install pinned dependencies                            |
-| `just run`               | `pnpm dev`                       | Run desktop and API together                           |
+| `just run`               | `pnpm dev`                       | Run the API and the native desktop together            |
+| `just mac-run`           | –                                | Build and open the native desktop alone                |
+| `just mac-test`          | –                                | Swift unit tests (code viewer core)                    |
+| `just mac-release-check` | –                                | Verify dev views are absent from the release binary    |
 | `just api`               | `pnpm dev:api`                   | Run only the API (after `pnpm build:packages`)         |
 | `just cli status --json` | `pnpm cli status --json`         | Invoke the development CLI                             |
 | `just check`             | `pnpm check`                     | Build shared packages and type-check all packages/apps |
 | `just build`             | `pnpm build`                     | Build shared packages and all three apps               |
-| `just package-desktop`   | `pnpm package:desktop`           | Create an unpacked desktop application for the host OS |
+| `just package-desktop`   | `pnpm package:desktop`           | Deprecated: unpacked Electron app (use `mac-app`)      |
 | `just format`            | `pnpm format`                    | Format active source and documentation                 |
 | `just format-check`      | `pnpm format:check`              | Verify formatting                                      |
 | `just lint`              | `pnpm lint`                      | TypeScript, ESLint, and Markdownlint                   |
@@ -80,23 +94,21 @@ separately with `UNSHELL_API_PORT`. Only loopback HTTP origins are supported in 
 | `just release-check`     | `pnpm release:check`             | Build and verify development surfaces are absent       |
 | `just verify`            | `pnpm verify`                    | Run all quality gates                                  |
 
-`pnpm test:desktop` also launches Electron for an end-to-end smoke test that the empty, sandboxed window opens. It
-requires a graphical session.
+For a production build, run the API with `pnpm --filter unshell-api start` and build the app with `just mac-app release`
+(output: `apps/unshell-mac/.build/Unshell.app`, ad-hoc signed). Install dependencies with pnpm when running the built
+API/CLI from this checkout. Standalone CLI distribution, installers, signing, auto-updates, and remote API deployment
+are future work.
 
-For production builds, run the API with `pnpm --filter unshell-api start`, then preview the desktop with
-`pnpm --filter unshell-desktop preview`. Packaged desktop output is under `apps/unshell-desktop/release`. The desktop is
-an empty window for now and does not talk to the API yet. Install dependencies with pnpm when running the built API/CLI
-from this checkout. Standalone CLI distribution, installers, signing, auto-updates, and remote API deployment are future
-work.
-
-On Linux, Electron requires a graphical desktop and its system libraries. For NixOS, the included Nix shell provides a
-Nix-compatible Electron runtime via `ELECTRON_OVERRIDE_DIST_PATH`. On macOS, the standard Electron download is used.
+The desktop is macOS only. On Linux the API and CLI work as before; the deprecated Electron desktop still runs there
+(`pnpm dev:desktop`, with the Nix shell's `ELECTRON_OVERRIDE_DIST_PATH` on NixOS) until it is removed.
+`pnpm test:desktop` (deprecated) launches Electron for its end-to-end smoke test in a graphical session.
 
 ## Repository layout
 
 ```text
 apps/
-  unshell-desktop/     Electron main/preload and React renderer
+  unshell-mac/         Native macOS desktop (Swift, AppKit, libghostty, tree-sitter)
+  unshell-desktop/     Deprecated Electron desktop, pending removal
   unshell-api/         Coordination HTTP service
   unshell-cli/         Agent/developer commands
 packages/

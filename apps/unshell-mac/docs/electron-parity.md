@@ -4,8 +4,9 @@ Inventory of everything in `apps/unshell-desktop` (Electron) and the root toolin
 macOS equivalent in `apps/unshell-mac`. The Electron app stays until every row below is either done or explicitly
 dropped, and removal is approved.
 
-Status values: **done** (native equivalent works), **planned** (scheduled in this migration), **dropped** (no native
-equivalent; reason given), **n/a** (Electron plumbing that disappears with Electron).
+Status values: **done** (native equivalent works), **planned** (scheduled in this migration), **deprecated** (Electron
+command still works and warns; native replacement listed), **dropped** (no native equivalent; reason given), **n/a**
+(Electron plumbing that disappears with Electron).
 
 ## Product surface
 
@@ -61,15 +62,15 @@ The Electron app's production window is empty: everything user-visible lives beh
 
 ## Development area
 
-| Item                                         | What it does                                                                  | Swift equivalent                                                         | Status  |
-| -------------------------------------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------ | ------- |
-| `App.tsx` `import.meta.env.DEV` gate         | Dev tooling exists only in development bundles                                | `#if DEBUG` around `Dev/`                                                | done    |
-| `dev/DevTools.tsx` (Dev button)              | Floating toggle for the Dev area                                              | Dev menu (⌥⌘1…), `UNSHELL_DEV_VIEW=<id>`                                 | done    |
-| `dev/DevArea.tsx`, `dev/views.ts`            | Registry of dev views with a sidebar; Escape closes                           | `DevWindowController` with `DevViews` registry; Escape closes            | done    |
-| `dev/views/DesignSystemView.tsx`             | Specimen: palette, semantic colours, type, spacing, radii, motion, components | Dev › Design system                                                      | done    |
-| `dev/views/CodeViewerView.tsx`, `samples.ts` | Language picker over 25 sample files                                          | Dev › Code viewer (samples in `Resources/Samples`, plus a 50k-line file) | done    |
-| `dev/views/TerminalView.tsx`                 | Terminal tabs playground                                                      | Dev › Terminal playground                                                | planned |
-| `dev/dev.css`                                | Dev area and specimen layout                                                  | AppKit layout in the dev views                                           | done    |
+| Item                                         | What it does                                                                  | Swift equivalent                                                         | Status |
+| -------------------------------------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------ | ------ |
+| `App.tsx` `import.meta.env.DEV` gate         | Dev tooling exists only in development bundles                                | `#if DEBUG` around `Dev/`                                                | done   |
+| `dev/DevTools.tsx` (Dev button)              | Floating toggle for the Dev area                                              | Dev menu (⌥⌘1…), `UNSHELL_DEV_VIEW=<id>`                                 | done   |
+| `dev/DevArea.tsx`, `dev/views.ts`            | Registry of dev views with a sidebar; Escape closes                           | `DevWindowController` with `DevViews` registry; Escape closes            | done   |
+| `dev/views/DesignSystemView.tsx`             | Specimen: palette, semantic colours, type, spacing, radii, motion, components | Dev › Design system                                                      | done   |
+| `dev/views/CodeViewerView.tsx`, `samples.ts` | Language picker over 25 sample files                                          | Dev › Code viewer (samples in `Resources/Samples`, plus a 50k-line file) | done   |
+| `dev/views/TerminalView.tsx`                 | Terminal tabs playground                                                      | Dev › Terminal playground                                                | done   |
+| `dev/dev.css`                                | Dev area and specimen layout                                                  | AppKit layout in the dev views                                           | done   |
 
 ### Code viewer measurements
 
@@ -108,17 +109,17 @@ Differences from the Electron viewer:
 
 ## Root tooling and docs
 
-| Item                                                                          | What it does                                                                                    | Swift equivalent                                                      | Status  |
-| ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- | ------- |
-| `pnpm dev` / `just run`                                                       | API plus Electron with reload                                                                   | API plus `just mac-run`                                               | planned |
-| `pnpm dev:desktop`                                                            | Electron alone                                                                                  | `just mac-run`; keep as deprecated                                    | planned |
-| `pnpm package:desktop` / `just package-desktop`                               | Unpacked Electron app                                                                           | `just mac-app release`; keep as deprecated                            | planned |
-| `pnpm test:desktop`, `scripts/smoke-desktop.mjs`                              | Launches the built app with Playwright; checks title, no Dev button, bridge keys, sandbox flags | Launch smoke for the Swift app; keep the Electron one as deprecated   | planned |
-| `pnpm release:check`, `scripts/check-release.mjs`                             | Fails if dev surfaces or renderer URL overrides leak into the release bundle                    | `just mac-release-check` (`strings` on the release binary, 9 markers) | done    |
-| `README.md`, `docs/development.md`, `docs/architecture.md`, `CONTRIBUTING.md` | Describe Electron as the desktop                                                                | Swift app is the desktop; Electron deprecated pending removal         | planned |
-| ESLint, Prettier, markdownlint ignores for `samples/`                         | Keep sample files out of lint                                                                   | Same ignores for `apps/unshell-mac/Resources/Samples`                 | done    |
-| `flake.nix` `ELECTRON_OVERRIDE_DIST_PATH` (Linux)                             | Nix Electron runtime on Linux                                                                   | No Linux desktop                                                      | dropped |
-| `pnpm-workspace.yaml` built deps (electron, node-pty)                         | Allow install scripts                                                                           | Removed with Electron                                                 | n/a     |
+| Item                                                                          | What it does                                                                                    | Swift equivalent                                                                                    | Status     |
+| ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | ---------- |
+| `pnpm dev` / `just run`                                                       | API plus Electron with reload                                                                   | API plus the native app (`just mac-dev`) under `concurrently`                                       | done       |
+| `pnpm dev:desktop`                                                            | Electron alone                                                                                  | `pnpm dev:mac` / `just mac-run`; `dev:desktop` prints a deprecation warning                         | deprecated |
+| `pnpm package:desktop` / `just package-desktop`                               | Unpacked Electron app                                                                           | `just mac-app release`; the Electron command prints a deprecation warning                           | deprecated |
+| `pnpm test:desktop`, `scripts/smoke-desktop.mjs`                              | Launches the built app with Playwright; checks title, no Dev button, bridge keys, sandbox flags | `just mac-test` and `just mac-release-check`; the Playwright smoke test is deprecated with Electron | deprecated |
+| `pnpm release:check`, `scripts/check-release.mjs`                             | Fails if dev surfaces or renderer URL overrides leak into the release bundle                    | `just mac-release-check` (`strings` on the release binary, 9 markers)                               | done       |
+| `README.md`, `docs/development.md`, `docs/architecture.md`, `CONTRIBUTING.md` | Describe Electron as the desktop                                                                | Swift app is the desktop; Electron deprecated pending removal                                       | done       |
+| ESLint, Prettier, markdownlint ignores for `samples/`                         | Keep sample files out of lint                                                                   | Same ignores for `apps/unshell-mac/Resources/Samples`                                               | done       |
+| `flake.nix` `ELECTRON_OVERRIDE_DIST_PATH` (Linux)                             | Nix Electron runtime on Linux                                                                   | No Linux desktop                                                                                    | dropped    |
+| `pnpm-workspace.yaml` built deps (electron, node-pty)                         | Allow install scripts                                                                           | Removed with Electron                                                                               | n/a        |
 
 ## No sensible native equivalent
 

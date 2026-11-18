@@ -85,6 +85,10 @@ mac-app config="debug": (mac-build config)
     /usr/bin/codesign --force --sign - "$app" >/dev/null
     echo "{{mac_dir}}/$app"
 
+# Build and run the app in the foreground (logs to the terminal; used by `just run`)
+mac-dev config="debug": (mac-app config)
+    "{{mac_dir}}/.build/Unshell.app/Contents/MacOS/Unshell"
+
 # Build and launch the app
 mac-run config="debug": (mac-app config)
     #!/usr/bin/env bash
@@ -99,9 +103,9 @@ mac-stress count="50" config="release": (mac-app config)
     {{mac_toolchain_guard}}
     UNSHELL_STRESS={{count}} exec "{{mac_dir}}/.build/Unshell.app/Contents/MacOS/Unshell"
 
-# Fail if development-only code reached the release binary (the native
-# equivalent of `pnpm release:check`). Markers are checked against the Debug
-# binary too, so the check cannot pass vacuously.
+# Markers are also checked against the Debug binary, so the check cannot pass
+# vacuously.
+# Fail if development-only code reached the release binary (native release:check)
 mac-release-check: (mac-build "release") (mac-build "debug")
     #!/usr/bin/env bash
     set -euo pipefail
@@ -134,9 +138,9 @@ tree-sitter-grammars:
     {{mac_toolchain_guard}}
     "{{mac_dir}}/Support/fetch-grammars.sh" "{{mac_dir}}" "{{mac_cache}}"
 
-# Measure the code viewer on a generated file (default 50k lines): first paint,
-# first highlighted paint, parse time, jump latency and display-linked scroll.
 # Optimized build with the Debug-only benchmark compiled in (separate .build/bench).
+# Reports first paint, first highlighted paint, parse, jump latency, scroll frames.
+# Benchmark the code viewer on a generated file (default 50k lines)
 mac-code-bench lines="50000":
     #!/usr/bin/env bash
     set -euo pipefail

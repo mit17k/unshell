@@ -9,8 +9,12 @@ init:
 deps:
     pnpm install --frozen-lockfile
 
-# Run the API and desktop together
+# Run the API sidecar and the native macOS app together
 run:
+    pnpm dev
+
+# Alias of `run`
+dev:
     pnpm dev
 
 api:
@@ -28,6 +32,7 @@ build:
 build-release:
     pnpm build
 
+# Deprecated: packages the Electron desktop. Use `just mac-app release`.
 package-desktop:
     pnpm package:desktop
 

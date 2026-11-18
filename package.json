@@ -8,9 +8,10 @@
     "node": ">=22.12.0"
   },
   "scripts": {
-    "dev": "pnpm build:packages && concurrently --kill-others -n api,desktop \"pnpm dev:api\" \"pnpm dev:desktop\"",
+    "dev": "pnpm build:packages && concurrently --kill-others -n api,mac \"pnpm dev:api\" \"pnpm dev:mac\"",
     "dev:api": "pnpm --filter unshell-api dev",
-    "dev:desktop": "pnpm --filter unshell-desktop dev",
+    "dev:mac": "just mac-dev",
+    "dev:desktop": "echo \"[deprecated] dev:desktop: the Electron desktop is deprecated pending removal; use pnpm dev:mac\" >&2 && pnpm --filter unshell-desktop dev",
     "cli": "pnpm --filter unshell-cli dev",
     "build:packages": "pnpm --filter \"./packages/*\" -r build",
     "build": "pnpm -r build",
@@ -22,8 +23,8 @@
     "docs:lint": "markdownlint-cli2",
     "release:check": "pnpm build && node scripts/check-release.mjs",
     "verify": "pnpm format:check && pnpm lint && pnpm test && pnpm release:check",
-    "package:desktop": "pnpm build:packages && pnpm --filter unshell-desktop package",
-    "test:desktop": "pnpm release:check && node --import tsx scripts/smoke-desktop.mjs"
+    "package:desktop": "echo \"[deprecated] package:desktop: the Electron desktop is deprecated pending removal; use just mac-app release\" >&2 && pnpm build:packages && pnpm --filter unshell-desktop package",
+    "test:desktop": "echo \"[deprecated] test:desktop: the Electron desktop is deprecated pending removal; use just mac-release-check\" >&2 && pnpm release:check && node --import tsx scripts/smoke-desktop.mjs"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
