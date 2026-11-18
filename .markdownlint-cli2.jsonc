@@ -9,6 +9,9 @@
     ".direnv/**",
     ".pnpm-store/**",
     "target/**",
+    ".cache/**",
+    "apps/unshell-mac/.build/**",
+    "apps/unshell-mac/Vendor/**",
     "apps/unshell-desktop/src/renderer/dev/samples/**",
   ],
 }

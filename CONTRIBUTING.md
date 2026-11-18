@@ -24,8 +24,8 @@ environments use a predictable layout. A fast, deeply integrated code viewer rem
 
 ## Repository architecture
 
-- `apps/unshell-mac` owns the native macOS app: windows, terminals (libghostty surfaces), and native UI. See its
-  README for build commands (`just ghostty-kit`, `just mac-run`).
+- `apps/unshell-mac` owns the native macOS app: windows, terminals (libghostty surfaces), and native UI. See its README
+  for build commands (`just ghostty-kit`, `just mac-run`).
 - `apps/unshell-desktop` owns Electron lifecycle, preload IPC, React composition, routes, and feature flows.
 - `apps/unshell-api` owns coordination, domain operations, persistence, and local filesystem/process adapters.
 - `apps/unshell-cli` owns commands and agent-facing output. It calls the API rather than duplicating domain logic.
