@@ -1,7 +1,7 @@
 import AppKit
 import QuartzCore
 
-/// Swift port of apps/unshell-desktop/src/renderer/tokens.css: Tokyo Night on an
+/// Swift port of the former Electron app's tokens.css: Tokyo Night on an
 /// editorial, hairline layout. Views use the semantic names (`Theme.Color`,
 /// `Theme.Space`, `Theme.Type`...); raw `Palette` values only feed them.
 enum Theme {

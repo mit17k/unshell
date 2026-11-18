@@ -8,5 +8,4 @@ coverage/
 .direnv/
 .pnpm-store/
 .delta/
-apps/unshell-desktop/src/renderer/dev/samples/
 apps/unshell-mac/Resources/Samples/

@@ -46,8 +46,8 @@ through the loopback API, as the CLI does; it must not mutate workspace data its
 The design system (`Theme.swift`, `UI/`) carries the Tokyo Night tokens forward. Development views are compiled only in
 Debug builds (`#if DEBUG`), and `just mac-release-check` rejects any development marker in the release binary.
 
-The Electron desktop (`apps/unshell-desktop`) is deprecated pending removal. Until then it keeps its original boundary:
-a sandboxed renderer with context isolation, no Node integration, and a narrow, sender-validated terminal IPC bridge.
+The desktop was previously an Electron app with a sandboxed renderer and a narrow terminal IPC bridge. It has been
+removed; Git history has the implementation, and `apps/unshell-mac/docs/electron-parity.md` records what replaced it.
 
 ## Migration sequence
 

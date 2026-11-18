@@ -3,7 +3,7 @@ import AppKit
 import GhosttyKit
 
 /// Terminal tabs playground: open, switch and close terminals, with renderer
-/// and grid-size badges. Port of renderer/dev/views/TerminalView.tsx.
+/// and grid-size badges. Port of the former Electron renderer/dev/views/TerminalView.tsx.
 final class TerminalPlaygroundView: NSView {
     private struct Tab {
         let view: TerminalSurfaceView

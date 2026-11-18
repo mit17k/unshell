@@ -4,7 +4,7 @@ import QuartzCore
 import UnshellCode
 
 /// Sample files and the generated large file used by the dev code viewer.
-/// Port of renderer/dev/samples.ts (the files themselves live in Resources/Samples).
+/// Port of the former Electron renderer/dev/samples.ts (the files themselves live in Resources/Samples).
 enum CodeSamples {
     static let files: [String: String] = [
         "typescript": "workspace.ts", "tsx": "AgentCard.tsx", "javascript": "queue.js", "python": "indexer.py",
@@ -51,7 +51,7 @@ enum CodeSamples {
 }
 
 /// Dev › Code viewer: a language picker over the 25 samples, plus a generated
-/// 50,000-line TypeScript file. Port of renderer/dev/views/CodeViewerView.tsx.
+/// 50,000-line TypeScript file. Port of the former Electron renderer/dev/views/CodeViewerView.tsx.
 final class CodeViewerDevView: NSView {
     private let host = NSView()
     private weak var viewer: CodeViewerView?

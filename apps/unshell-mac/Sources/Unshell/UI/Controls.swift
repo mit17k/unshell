@@ -1,6 +1,6 @@
 import AppKit
 
-/// Square, mono, uppercase button. Port of renderer/ui/Button.tsx and the
+/// Square, mono, uppercase button. Port of the former Electron renderer/ui/Button.tsx and the
 /// `.u-button` rules: four variants, three sizes, a 1 pt press nudge.
 final class UButton: NSControl {
     enum Variant { case primary, secondary, ghost, danger }
@@ -139,7 +139,7 @@ enum Tone {
     }
 }
 
-/// Mono status chip with an optional square dot. Port of renderer/ui/Badge.tsx.
+/// Mono status chip with an optional square dot. Port of the former Electron renderer/ui/Badge.tsx.
 final class Badge: NSView {
     init(_ text: String, tone: Tone = .neutral, dot: Bool = false) {
         super.init(frame: .zero)
@@ -177,7 +177,7 @@ final class Badge: NSView {
     required init?(coder: NSCoder) { fatalError("not used") }
 }
 
-/// Labelled text input with hint or error. Port of renderer/ui/Field.tsx.
+/// Labelled text input with hint or error. Port of the former Electron renderer/ui/Field.tsx.
 final class Field: NSView {
     let input = NSTextField()
 
@@ -232,7 +232,7 @@ final class Field: NSView {
     required init?(coder: NSCoder) { fatalError("not used") }
 }
 
-/// Square toggle with a sliding thumb. Port of renderer/ui/Switch.tsx.
+/// Square toggle with a sliding thumb. Port of the former Electron renderer/ui/Switch.tsx.
 final class USwitch: NSControl {
     private(set) var isOn: Bool
     var onChange: ((Bool) -> Void)?

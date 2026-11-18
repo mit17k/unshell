@@ -2,7 +2,7 @@ import AppKit
 import CodeEditTextView
 import UnshellCode
 
-/// Read-only code viewer. Port of renderer/code/CodeViewer.tsx, built for large
+/// Read-only code viewer. Port of the former Electron renderer/code/CodeViewer.tsx, built for large
 /// files and long lines:
 /// - CodeEditTextView keeps a line tree and lays out only the visible lines, so
 ///   lines do not wrap and the view scrolls horizontally (wrapping is a toggle).

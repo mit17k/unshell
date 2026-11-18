@@ -1,6 +1,6 @@
 import AppKit
 
-/// "01  TITLE ───────── 字". Port of renderer/ui/SectionHeader.tsx.
+/// "01  TITLE ───────── 字". Port of the former Electron renderer/ui/SectionHeader.tsx.
 func SectionHeader(index: String? = nil, title: String, glyph: String? = nil) -> NSStackView {
     var views: [NSView] = []
     if let index { views.append(UIText.mono(index, size: Theme.TextSize.small, color: Theme.Color.textSecondary)) }
@@ -22,7 +22,7 @@ struct Spec {
     var note: String?
 }
 
-/// Label, rule, value rows: the reference's spec sheet. Port of renderer/ui/SpecList.tsx.
+/// Label, rule, value rows: the reference's spec sheet. Port of the former Electron renderer/ui/SpecList.tsx.
 func SpecList(_ items: [Spec]) -> NSStackView {
     var rows: [NSView] = [Hairline()]
     for item in items {
@@ -43,7 +43,7 @@ func SpecList(_ items: [Spec]) -> NSStackView {
     return stack
 }
 
-/// Hairline grid of big numbers. Port of renderer/ui/StatGrid.tsx.
+/// Hairline grid of big numbers. Port of the former Electron renderer/ui/StatGrid.tsx.
 final class StatGrid: NSView {
     init(_ stats: [(value: String, label: String)]) {
         super.init(frame: .zero)
@@ -82,7 +82,7 @@ final class StatGrid: NSView {
 }
 
 /// Hairline box with corner brackets, for media, previews and callouts.
-/// Port of renderer/ui/Frame.tsx.
+/// Port of the former Electron renderer/ui/Frame.tsx.
 final class Frame: NSView {
     init(caption: String? = nil, content: NSView) {
         super.init(frame: .zero)
@@ -131,7 +131,7 @@ struct Feature {
     let body: String
 }
 
-/// Glyph, title, body columns. Port of renderer/ui/FeatureGrid.tsx.
+/// Glyph, title, body columns. Port of the former Electron renderer/ui/FeatureGrid.tsx.
 func FeatureGrid(_ items: [Feature]) -> NSStackView {
     var columns: [NSView] = []
     for (index, item) in items.enumerated() {
@@ -156,7 +156,7 @@ func FeatureGrid(_ items: [Feature]) -> NSStackView {
     return grid
 }
 
-/// Single-open disclosure list. Port of renderer/ui/Accordion.tsx.
+/// Single-open disclosure list. Port of the former Electron renderer/ui/Accordion.tsx.
 final class Accordion: NSView {
     struct Item {
         let id: String
@@ -247,7 +247,7 @@ final class ClickableStack: NSStackView {
     override func resetCursorRects() { addCursorRect(bounds, cursor: .pointingHand) }
 }
 
-/// Brand, mono nav with an accent underline, actions. Port of renderer/ui/TopBar.tsx.
+/// Brand, mono nav with an accent underline, actions. Port of the former Electron renderer/ui/TopBar.tsx.
 final class TopBar: NSView {
     private var links: [(id: String, label: String, field: NSTextField, underline: NSView)] = []
     private(set) var active: String?

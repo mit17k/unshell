@@ -2,7 +2,7 @@ import Foundation
 
 /// A decoded LSP semantic token (textDocument/semanticTokens). Positions are
 /// zero-based line and UTF-16 character, as the protocol defines them.
-/// Port of renderer/code/semantic.ts.
+/// Port of the former Electron renderer/code/semantic.ts.
 public struct SemanticToken: Equatable, Sendable {
     public var line: Int
     public var character: Int

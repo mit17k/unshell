@@ -12,12 +12,12 @@
         pkgs = nixpkgs.legacyPackages.${system};
       in {
         # mkShellNoCC: no stdenv compiler. On macOS, Xcode owns the native
-        # toolchain (clang, SDK, xcrun, Metal) for node-pty, GhosttyKit and the
+        # toolchain (clang, SDK, xcrun, Metal) for GhosttyKit, the grammars and the
         # Swift app; Nix must not inject its cc-wrapper, apple-sdk, xcrun shim,
         # SDKROOT, DEVELOPER_DIR or NIX_CFLAGS/LDFLAGS.
         # gettext provides msgfmt for GhosttyKit's translations. Zig 0.17 isn't
         # in nixpkgs yet, so `just ghostty-kit` downloads it into .cache/.
-        devShells.default = pkgs.mkShellNoCC ({
+        devShells.default = pkgs.mkShellNoCC {
           packages = with pkgs; [ nodejs_24 pnpm just git gettext ];
           shellHook = ''
             # Left over from the Darwin stdenv and gettext's setup hook; only
@@ -28,8 +28,6 @@
             echo "Node: $(node --version)"
             echo "Run 'just' to see available commands"
           '';
-        } // pkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
-          ELECTRON_OVERRIDE_DIST_PATH = "${pkgs.electron}/lib/electron";
-        });
+        };
       });
 }

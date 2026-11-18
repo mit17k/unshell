@@ -32,10 +32,6 @@ build:
 build-release:
     pnpm build
 
-# Deprecated: packages the Electron desktop. Use `just mac-app release`.
-package-desktop:
-    pnpm package:desktop
-
 format:
     pnpm format
 
@@ -48,8 +44,12 @@ lint:
 test:
     pnpm test
 
+# Production builds; on macOS also checks dev views are absent from the app
 release-check:
+    #!/usr/bin/env bash
+    set -euo pipefail
     pnpm release:check
+    if [ "$(uname -s)" = Darwin ]; then just mac-release-check; else echo "skipping mac-release-check (not macOS)"; fi
 
 verify:
     pnpm verify

@@ -1,6 +1,6 @@
 # Unshell for macOS
 
-The Unshell desktop: a native macOS app in Swift. It replaces the deprecated Electron desktop (`apps/unshell-desktop`);
+The Unshell desktop: a native macOS app in Swift. It replaced the former Electron desktop (removed; see Git history);
 [docs/electron-parity.md](docs/electron-parity.md) maps every Electron feature to its native equivalent.
 
 ## Architecture

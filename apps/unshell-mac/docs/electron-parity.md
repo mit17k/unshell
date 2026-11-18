@@ -1,12 +1,11 @@
 # Electron parity
 
-Inventory of everything in `apps/unshell-desktop` (Electron) and the root tooling that refers to it, with the native
-macOS equivalent in `apps/unshell-mac`. The Electron app stays until every row below is either done or explicitly
-dropped, and removal is approved.
+Historical record: everything the former Electron desktop (`apps/unshell-desktop`) and its root tooling did, with the
+native macOS equivalent in `apps/unshell-mac`. The Electron app was removed once every row was done or explicitly
+dropped; its source remains in Git history.
 
-Status values: **done** (native equivalent works), **planned** (scheduled in this migration), **deprecated** (Electron
-command still works and warns; native replacement listed), **dropped** (no native equivalent; reason given), **n/a**
-(Electron plumbing that disappears with Electron).
+Status values: **done** (native equivalent works), **removed** (Electron command removed; native replacement listed),
+**dropped** (no native equivalent; reason given), **n/a** (Electron plumbing that went away with Electron).
 
 ## Product surface
 
@@ -117,17 +116,17 @@ Remaining differences from the Electron viewer:
 
 ## Root tooling and docs
 
-| Item                                                                          | What it does                                                                                    | Swift equivalent                                                                                    | Status     |
-| ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | ---------- |
-| `pnpm dev` / `just run`                                                       | API plus Electron with reload                                                                   | API plus the native app (`just mac-dev`) under `concurrently`                                       | done       |
-| `pnpm dev:desktop`                                                            | Electron alone                                                                                  | `pnpm dev:mac` / `just mac-run`; `dev:desktop` prints a deprecation warning                         | deprecated |
-| `pnpm package:desktop` / `just package-desktop`                               | Unpacked Electron app                                                                           | `just mac-app release`; the Electron command prints a deprecation warning                           | deprecated |
-| `pnpm test:desktop`, `scripts/smoke-desktop.mjs`                              | Launches the built app with Playwright; checks title, no Dev button, bridge keys, sandbox flags | `just mac-test` and `just mac-release-check`; the Playwright smoke test is deprecated with Electron | deprecated |
-| `pnpm release:check`, `scripts/check-release.mjs`                             | Fails if dev surfaces or renderer URL overrides leak into the release bundle                    | `just mac-release-check` (`strings` on the release binary, 9 markers)                               | done       |
-| `README.md`, `docs/development.md`, `docs/architecture.md`, `CONTRIBUTING.md` | Describe Electron as the desktop                                                                | Swift app is the desktop; Electron deprecated pending removal                                       | done       |
-| ESLint, Prettier, markdownlint ignores for `samples/`                         | Keep sample files out of lint                                                                   | Same ignores for `apps/unshell-mac/Resources/Samples`                                               | done       |
-| `flake.nix` `ELECTRON_OVERRIDE_DIST_PATH` (Linux)                             | Nix Electron runtime on Linux                                                                   | No Linux desktop                                                                                    | dropped    |
-| `pnpm-workspace.yaml` built deps (electron, node-pty)                         | Allow install scripts                                                                           | Removed with Electron                                                                               | n/a        |
+| Item                                                                          | What it does                                                                                    | Swift equivalent                                                                                             | Status  |
+| ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | ------- |
+| `pnpm dev` / `just run`                                                       | API plus Electron with reload                                                                   | API plus the native app (`just mac-dev`) under `concurrently`                                                | done    |
+| `pnpm dev:desktop`                                                            | Electron alone                                                                                  | `pnpm dev:mac` / `just mac-run`; `dev:desktop` removed                                                       | removed |
+| `pnpm package:desktop` / `just package-desktop`                               | Unpacked Electron app                                                                           | `just mac-app release`; the Electron command was removed                                                     | removed |
+| `pnpm test:desktop`, `scripts/smoke-desktop.mjs`                              | Launches the built app with Playwright; checks title, no Dev button, bridge keys, sandbox flags | `just mac-test` and `just mac-release-check`; the Playwright smoke test was removed with Electron            | removed |
+| `pnpm release:check`, `scripts/check-release.mjs`                             | Fails if dev surfaces or renderer URL overrides leak into the release bundle                    | `just mac-release-check` (`strings` on the release binary); `pnpm release:check` is now the production build | done    |
+| `README.md`, `docs/development.md`, `docs/architecture.md`, `CONTRIBUTING.md` | Describe Electron as the desktop                                                                | Swift app is the desktop; Electron mentioned only as history                                                 | done    |
+| ESLint, Prettier, markdownlint ignores for `samples/`                         | Keep sample files out of lint                                                                   | Same ignores for `apps/unshell-mac/Resources/Samples`                                                        | done    |
+| `flake.nix` `ELECTRON_OVERRIDE_DIST_PATH` (Linux)                             | Nix Electron runtime on Linux                                                                   | No Linux desktop                                                                                             | dropped |
+| `pnpm-workspace.yaml` built deps (electron, node-pty)                         | Allow install scripts                                                                           | Removed with Electron                                                                                        | n/a     |
 
 ## No sensible native equivalent
 

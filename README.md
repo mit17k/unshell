@@ -8,20 +8,19 @@ the same capabilities. Unshell retains its opinionated workspace layout and the 
 
 ## Architecture
 
-| App               | Stack                                              | Responsibility                                      |
-| ----------------- | -------------------------------------------------- | --------------------------------------------------- |
-| `unshell-mac`     | Swift, AppKit, libghostty, tree-sitter, SwiftPM    | Desktop control center (macOS)                      |
-| `unshell-api`     | Node.js, TypeScript, Fastify                       | Coordination and future domain/persistence services |
-| `unshell-cli`     | Node.js, TypeScript, Commander                     | Developer and agent interface to the API            |
-| `unshell-desktop` | Electron, React, TypeScript, Vite (**deprecated**) | Former desktop, kept until its removal is approved  |
+| App           | Stack                                           | Responsibility                                      |
+| ------------- | ----------------------------------------------- | --------------------------------------------------- |
+| `unshell-mac` | Swift, AppKit, libghostty, tree-sitter, SwiftPM | Desktop control center (macOS)                      |
+| `unshell-api` | Node.js, TypeScript, Fastify                    | Coordination and future domain/persistence services |
+| `unshell-cli` | Node.js, TypeScript, Commander                  | Developer and agent interface to the API            |
 
 The desktop is a native macOS app: terminals are libghostty surfaces and the code viewer uses tree-sitter on
 CodeEditTextView. Domain logic stays in TypeScript: the API runs as a loopback sidecar and the CLI is the agent-facing
 surface. pnpm workspaces manage the TypeScript side without an additional build orchestrator; SwiftPM builds the app.
 Runtime schemas live in `@unshell/contracts`; the CLI uses `@unshell/sdk` for validated HTTP responses.
 
-The Electron desktop (`apps/unshell-desktop`) is **deprecated pending removal**. Everything it did has a native
-equivalent or an explicit decision recorded in [the parity inventory](apps/unshell-mac/docs/electron-parity.md).
+The desktop was previously an Electron app; it has been removed (available in Git history).
+[The parity inventory](apps/unshell-mac/docs/electron-parity.md) records what replaced each part of it.
 
 ## Migration status
 
@@ -86,7 +85,6 @@ separately with `UNSHELL_API_PORT`. Only loopback HTTP origins are supported in 
 | `just cli status --json` | `pnpm cli status --json`         | Invoke the development CLI                             |
 | `just check`             | `pnpm check`                     | Build shared packages and type-check all packages/apps |
 | `just build`             | `pnpm build`                     | Build shared packages and all three apps               |
-| `just package-desktop`   | `pnpm package:desktop`           | Deprecated: unpacked Electron app (use `mac-app`)      |
 | `just format`            | `pnpm format`                    | Format active source and documentation                 |
 | `just format-check`      | `pnpm format:check`              | Verify formatting                                      |
 | `just lint`              | `pnpm lint`                      | TypeScript, ESLint, and Markdownlint                   |
@@ -99,22 +97,18 @@ For a production build, run the API with `pnpm --filter unshell-api start` and b
 API/CLI from this checkout. Standalone CLI distribution, installers, signing, auto-updates, and remote API deployment
 are future work.
 
-The desktop is macOS only. On Linux the API and CLI work as before; the deprecated Electron desktop still runs there
-(`pnpm dev:desktop`, with the Nix shell's `ELECTRON_OVERRIDE_DIST_PATH` on NixOS) until it is removed.
-`pnpm test:desktop` (deprecated) launches Electron for its end-to-end smoke test in a graphical session.
+The desktop is macOS only. On Linux the API and CLI work as before.
 
 ## Repository layout
 
 ```text
 apps/
   unshell-mac/         Native macOS desktop (Swift, AppKit, libghostty, tree-sitter)
-  unshell-desktop/     Deprecated Electron desktop, pending removal
   unshell-api/         Coordination HTTP service
   unshell-cli/         Agent/developer commands
 packages/
   contracts/          Runtime schemas and protocol types
   sdk/                Shared HTTP client
-scripts/              Release verification
 docs/                Architecture and development guidance
 ```
 

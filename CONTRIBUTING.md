@@ -14,8 +14,8 @@ environments use a predictable layout. A fast, deeply integrated code viewer rem
 - The desktop is the native macOS app in Swift (`apps/unshell-mac`): AppKit core, terminals on libghostty (GhosttyKit
   built from a pinned Ghostty tag), a CodeEditTextView code viewer highlighted by tree-sitter, SwiftPM with no Xcode
   project. macOS only, for performance with large codebases and dozens of concurrent agent terminals.
-- The Electron app (`apps/unshell-desktop`) is deprecated pending removal. Do not add features to it. It is deleted only
-  after its removal is explicitly approved; `apps/unshell-mac/docs/electron-parity.md` tracks what replaced each part.
+- The former Electron desktop has been removed; it is available in Git history, and
+  `apps/unshell-mac/docs/electron-parity.md` records what replaced each part.
 - Domain logic stays in TypeScript, Node.js, and pnpm workspaces: Fastify for the API (a loopback sidecar daemon for the
   Swift app), Commander for the CLI. Keep the stack small and use established community tools.
 - The API and CLI are independent Node.js processes.
@@ -28,12 +28,11 @@ environments use a predictable layout. A fast, deeply integrated code viewer rem
 - `apps/unshell-mac` owns the native macOS app: windows, terminals (libghostty surfaces), the code viewer (`UnshellCode`
   library plus `Code/`), the design system (`Theme/`, `UI/`) and development views (`Dev/`). See its README for build
   commands.
-- `apps/unshell-desktop` is the deprecated Electron desktop, kept unchanged until its removal is approved.
 - `apps/unshell-api` owns coordination, domain operations, persistence, and local filesystem/process adapters.
 - `apps/unshell-cli` owns commands and agent-facing output. It calls the API rather than duplicating domain logic.
 - `packages/contracts` owns transport schemas, protocol types, and API compatibility rules; keep it
   platform-independent.
-- `packages/sdk` owns the shared HTTP client used by the CLI (and the deprecated Electron main process).
+- `packages/sdk` owns the shared HTTP client used by the CLI.
 - `pnpm-workspace.yaml`, the root `package.json`, and `pnpm-lock.yaml` define the workspace and tooling.
 - `flake.nix` provides an optional development environment. `justfile` mirrors supported pnpm commands.
 
@@ -46,9 +45,7 @@ workspaces. Do not change or erase existing Rust workspace data during the migra
 
 The desktop reaches domain operations only through the loopback API, as the CLI does; it must not mutate workspace data
 or run competing scheduling itself. Keep parsing, file loading and other heavy work off the main thread, and never route
-terminal output through view state: Ghostty owns each PTY, IO thread and renderer. While the deprecated Electron app
-remains, keep its Node integration disabled, context isolation and sandboxing enabled, and IPC narrow and
-sender-validated.
+terminal output through view state: Ghostty owns each PTY, IO thread and renderer.
 
 The initial API binds to loopback only. Do not expose it remotely until authentication and authorization are designed.
 CLI machine output uses JSON on stdout for success, JSON on stderr for errors, and nonzero failure exit codes.

@@ -2,7 +2,7 @@
 import AppKit
 
 /// The development-only area: a sidebar of registered dev views and the active
-/// view. Port of renderer/dev/DevArea.tsx and DevTools.tsx. Escape closes it.
+/// view. Port of the former Electron renderer/dev/DevArea.tsx and DevTools.tsx. Escape closes it.
 final class DevWindowController: NSWindowController, NSWindowDelegate {
     static let shared = DevWindowController()
 

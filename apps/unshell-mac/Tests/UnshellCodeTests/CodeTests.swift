@@ -90,7 +90,7 @@ let sampleFiles: [String: String] = [
     }
 }
 
-/// Ports of renderer/code/semantic.test.ts.
+/// Ports of the former Electron renderer/code/semantic.test.ts.
 @Suite struct Semantic {
     @Test func decodesRelativeTuples() {
         let legend = SemanticLegend(tokenTypes: ["variable", "parameter"], tokenModifiers: ["readonly", "defaultLibrary"])

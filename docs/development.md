@@ -34,7 +34,8 @@ pnpm verify
 ```
 
 This runs formatting, strict TypeScript checks, ESLint with zero warnings, Markdownlint, Vitest tests, and production
-builds with a development-surface check. `just verify` is equivalent. CI runs on macOS and Linux with Node.js 24.
+builds. `just release-check` also runs `just mac-release-check` on macOS. `just verify` is equivalent. CI runs on macOS
+and Linux with Node.js 24.
 
 On macOS, also run the native checks: `just mac-test` (code viewer unit tests, including all 25 sample languages) and
 `just mac-release-check` (fails if any development view or hook reaches the release binary). Development views live in
@@ -55,8 +56,7 @@ The desktop is not yet a self-contained distribution of the entire environment: 
 checkout. The app is ad-hoc signed; installer formats, signing, updates, and daemon installation are outside this
 initial migration.
 
-The Electron desktop is deprecated pending removal. `pnpm dev:desktop`, `pnpm package:desktop` and `pnpm test:desktop`
-still work and print a deprecation warning.
+The former Electron desktop has been removed; Git history has its source.
 
 ## Tooling and dependencies
 
@@ -64,11 +64,10 @@ still work and print a deprecation warning.
 source watchers during development and built output for production. There is no Nx/Turborepo layer. Prefer explicit
 dependencies and keep the shared SDK and contracts platform-independent.
 
-Dependency versions are pinned and the lockfile is committed. The deprecated Electron desktop's postinstall fetches the
-pinned Electron runtime; pnpm permits the esbuild dependency install script. Swift dependencies are pinned in
-`apps/unshell-mac/Package.swift` and `Package.resolved`; Ghostty and the tree-sitter grammars are pinned in
-`apps/unshell-mac/mac.just` and `apps/unshell-mac/grammars.tsv`. Review additional install scripts before adding them to
-`onlyBuiltDependencies`.
+Dependency versions are pinned and the lockfile is committed. pnpm permits only the esbuild dependency install script.
+Swift dependencies are pinned in `apps/unshell-mac/Package.swift` and `Package.resolved`; Ghostty and the tree-sitter
+grammars are pinned in `apps/unshell-mac/mac.just` and `apps/unshell-mac/grammars.tsv`. Review additional install
+scripts before adding them to `onlyBuiltDependencies`.
 
 ## Existing data
 
