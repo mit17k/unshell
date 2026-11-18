@@ -26,7 +26,8 @@ final class DevWindowController: NSWindowController, NSWindowDelegate {
         super.init(window: window)
         window.delegate = self
         build()
-        show(DevViews.all.first?.id ?? "")
+        // No view is shown (and the window stays closed) until the Dev menu or
+        // UNSHELL_DEV_VIEW asks for one.
     }
 
     @available(*, unavailable)
@@ -115,9 +116,16 @@ final class DevWindowController: NSWindowController, NSWindowDelegate {
         ])
     }
 
+}
+
+/// Target of the Dev menu items. Separate from the window controller so that
+/// building the menu at launch does not create (and open) the Dev window.
+final class DevMenuTarget: NSObject {
+    static let shared = DevMenuTarget()
+
     @objc func showDevView(_ sender: NSMenuItem) {
         guard let id = sender.representedObject as? String else { return }
-        show(id)
+        DevWindowController.shared.show(id)
     }
 }
 
@@ -132,11 +140,11 @@ enum DevMenu {
         let item = NSMenuItem()
         let menu = NSMenu(title: "Dev")
         for (index, entry) in DevViews.all.enumerated() {
-            let viewItem = NSMenuItem(title: entry.label, action: #selector(DevWindowController.showDevView(_:)),
+            let viewItem = NSMenuItem(title: entry.label, action: #selector(DevMenuTarget.showDevView(_:)),
                                       keyEquivalent: index < 9 ? "\(index + 1)" : "")
             viewItem.keyEquivalentModifierMask = [.command, .option]
             viewItem.representedObject = entry.id
-            viewItem.target = DevWindowController.shared
+            viewItem.target = DevMenuTarget.shared
             menu.addItem(viewItem)
         }
         item.submenu = menu
