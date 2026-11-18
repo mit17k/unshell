@@ -1,7 +1,7 @@
 import AppKit
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
-    private var runtime: GhosttyRuntime?
+    private(set) var runtime: GhosttyRuntime?
     private var windowController: TerminalWindowController?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -35,6 +35,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         NSApp.activate(ignoringOtherApps: true)
+
+        #if DEBUG
+        // UNSHELL_DEV_VIEW=<id> opens the dev area on that view at launch.
+        if let devView = env["UNSHELL_DEV_VIEW"] {
+            DevWindowController.shared.show(devView)
+        }
+        #endif
     }
 
     func applicationDidBecomeActive(_ notification: Notification) {

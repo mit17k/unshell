@@ -42,6 +42,11 @@ enum MainMenu {
         main.addItem(windowItem)
         NSApp.windowsMenu = windowMenu
 
+        #if DEBUG
+        // Development-only views. Release builds compile none of Dev/.
+        main.addItem(DevMenu.item())
+        #endif
+
         return main
     }
 }

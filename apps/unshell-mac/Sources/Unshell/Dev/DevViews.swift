@@ -15,6 +15,7 @@ enum DevViews {
 
     static let all: [Entry] = [
         Entry(id: "design-system", label: "Design system", make: { DesignSystemView() }),
+        Entry(id: "terminal", label: "Terminal playground", make: { TerminalPlaygroundView() }, scrolls: false),
     ]
 
     static func make(_ id: String) -> NSView? {

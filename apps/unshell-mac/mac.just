@@ -87,3 +87,30 @@ mac-stress count="50" config="release": (mac-app config)
     set -euo pipefail
     {{mac_toolchain_guard}}
     UNSHELL_STRESS={{count}} exec "{{mac_dir}}/.build/Unshell.app/Contents/MacOS/Unshell"
+
+# Fail if development-only code reached the release binary (the native
+# equivalent of `pnpm release:check`). Markers are checked against the Debug
+# binary too, so the check cannot pass vacuously.
+mac-release-check: (mac-build "release") (mac-build "debug")
+    #!/usr/bin/env bash
+    set -euo pipefail
+    {{mac_toolchain_guard}}
+    cd "{{mac_dir}}"
+    release="$(/usr/bin/swift build -c release --show-bin-path)/Unshell"
+    debug="$(/usr/bin/swift build -c debug --show-bin-path)/Unshell"
+    markers=("Development only" "DesignSystemView" "TerminalPlaygroundView" "DevWindowController" "UNSHELL_SNAPSHOT")
+    /usr/bin/strings -a "$release" > "$TMPDIR/unshell-release.strings"
+    /usr/bin/strings -a "$debug" > "$TMPDIR/unshell-debug.strings"
+    status=0
+    for marker in "${markers[@]}"; do
+      if ! grep -qF "$marker" "$TMPDIR/unshell-debug.strings"; then
+        echo "check is stale: marker '$marker' not found in the Debug binary" >&2
+        status=1
+      fi
+      if grep -qF "$marker" "$TMPDIR/unshell-release.strings"; then
+        echo "development surface leaked into release: '$marker'" >&2
+        status=1
+      fi
+    done
+    [ "$status" -eq 0 ] && echo "Release binary excludes development views and hooks (${#markers[@]} markers)."
+    exit "$status"
