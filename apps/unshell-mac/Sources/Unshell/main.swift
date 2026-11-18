@@ -9,6 +9,13 @@ if ghostty_init(UInt(CommandLine.argc), CommandLine.unsafeArgv) != GHOSTTY_SUCCE
 
 let application = NSApplication.shared
 
+// SIGTERM (e.g. `just mac-run` replacing a running build) quits like ⌘Q, so
+// the app delegate and libghostty shut down normally.
+signal(SIGTERM, SIG_IGN)
+let terminationSource = DispatchSource.makeSignalSource(signal: SIGTERM, queue: .main)
+terminationSource.setEventHandler { NSApp.terminate(nil) }
+terminationSource.resume()
+
 #if DEBUG
 // Scripted snapshot of a dev view; exits when done.
 _ = application

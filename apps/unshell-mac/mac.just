@@ -94,6 +94,15 @@ mac-run config="debug": (mac-app config)
     #!/usr/bin/env bash
     set -euo pipefail
     {{mac_toolchain_guard}}
+    # `open` would only bring a running (stale) build to the front, so quit
+    # it first. The app treats SIGTERM as ⌘Q; force-kill after 5 s.
+    binary="{{mac_dir}}/.build/Unshell.app/Contents/MacOS/Unshell"
+    if pids="$(/usr/bin/pgrep -f "^$binary")"; then
+      echo "Quitting the running Unshell ($pids)"
+      /bin/kill -TERM $pids 2>/dev/null || true
+      for _ in $(seq 1 50); do /usr/bin/pgrep -f "^$binary" >/dev/null || break; sleep 0.1; done
+      if /usr/bin/pgrep -f "^$binary" >/dev/null; then /usr/bin/pkill -KILL -f "^$binary" || true; sleep 0.2; fi
+    fi
     /usr/bin/open "{{mac_dir}}/.build/Unshell.app"
 
 # Launch with N terminals flooding output, to measure CPU/RAM (shown bottom-left)
