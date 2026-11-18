@@ -8,6 +8,13 @@ if ghostty_init(UInt(CommandLine.argc), CommandLine.unsafeArgv) != GHOSTTY_SUCCE
 }
 
 let application = NSApplication.shared
+
+#if DEBUG
+// Scripted snapshot of a dev view; exits when done.
+_ = application
+if DevSnapshot.runIfRequested() { exit(0) }
+#endif
+
 let appDelegate = AppDelegate()
 application.delegate = appDelegate
 application.setActivationPolicy(.regular)
